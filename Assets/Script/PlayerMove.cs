@@ -7,6 +7,7 @@ public class PlayerMOve : MonoBehaviour
     [SerializeField] private FloatingJoystick Attack_joystick;
     [SerializeField] private float speed;
     [SerializeField] private Animator animator;
+    [SerializeField] private Shot shot;
     //[SerializeField] private Transform fanshape;
     private Quaternion targetRotation;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -39,7 +40,8 @@ public class PlayerMOve : MonoBehaviour
             {
                 targetRotation = Quaternion.LookRotation(target, Vector3.up);
             }
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed);
+            if(!shot.isShot) transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed);
+
         }
         Vector3 move = target * speed * Time.deltaTime;
 

@@ -5,11 +5,12 @@ using UnityEngine.UI;
 public class Shot : MonoBehaviour
 {
     [SerializeField] private FloatingJoystick joystick;
-    [SerializeField] private GameObject bullete;
+    [SerializeField] private GameObject[] bullete;
     [SerializeField] private Transform firepoint;
     [SerializeField] private Transform collidershape;
+    [SerializeField] private float addRotateValue;
     [SerializeField] private float power;
-    [SerializeField] private float bulleteCount;
+    [SerializeField] private float[] bulleteCount;
     [SerializeField] private Image bulleteGage_Orange;
     [SerializeField] private Image bulleteGage_Gray;
     [SerializeField] private float Gage;
@@ -20,12 +21,13 @@ public class Shot : MonoBehaviour
     private Quaternion targetRotation;
     private Vector3 target;
     private Vector3 fanShapetarget;
-    bool isShot = false;
+    public bool isShot = false;
     bool isShotEnd=true;
     bool isReload=false;
-    [SerializeField] private enum PlayerType  { Player1, Player2 };
+    float vector = 1;
+    private enum PlayerType  { ShotGun, Assault };
 
-    PlayerType player = new PlayerType();
+    [SerializeField] PlayerType player = new PlayerType();
 
     [SerializeField] private float ChargeRate;
 
@@ -60,7 +62,7 @@ public class Shot : MonoBehaviour
 
             Quaternion baseRotation = Quaternion.LookRotation(fanShapetarget);
 
-            collidershape.transform.rotation = baseRotation * Quaternion.Euler(0, 75, 0);
+            collidershape.transform.rotation = baseRotation * Quaternion.Euler(0, addRotateValue, 0);
         }
         else 
         {
@@ -108,11 +110,16 @@ public class Shot : MonoBehaviour
 
                 switch (player)
                 {
-                    case PlayerType.Player1:
-                        Player1();
+                    case PlayerType.ShotGun:
+                        Shot_ShotGun();
                         //Debug.Log("方向:"+target);
                         //    rb.AddForce(new Vector3(target.x + (i * 0.5f - 0.5f)/2, target.y,target.z + (i * 0.5f - 0.5f)/2) * power, ForceMode.Impulse);
                         break;
+
+                    case PlayerType.Assault:
+                        Shot_Assault();
+                        break;
+
                 }
 
 
@@ -135,15 +142,15 @@ public class Shot : MonoBehaviour
 
     }
 
-    void Player1()
+    void Shot_ShotGun()
     {
         Gage -= 0.3f;
-        for (int i = 0; i < bulleteCount; i++)
+        for (int i = 0; i < bulleteCount[0]; i++)
         {
 
             Vector3 firestart = firepoint.position;
 
-            GameObject Bullete = Instantiate(bullete, firestart, transform.rotation);//ターゲット方向に弾を生成して発射する
+            GameObject Bullete = Instantiate(bullete[0], firestart, transform.rotation);//ターゲット方向に弾を生成して発射する
             Rigidbody rb = Bullete.GetComponent<Rigidbody>();
 
             DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
@@ -152,7 +159,7 @@ public class Shot : MonoBehaviour
                 Vector3 right = transform.right;
 
                 // 右方向に散らす
-                float offset = (i - (bulleteCount - 1) / 2f) * 0.2f;
+                float offset = (i - (bulleteCount[0] - 1) / 2f) * 0.2f;
                 Vector3 spreadDir = (target + right * offset).normalized;
 
                 rb.AddForce(spreadDir * deleteBullete.power, ForceMode.Impulse);
@@ -165,6 +172,74 @@ public class Shot : MonoBehaviour
         
         yield return new WaitForSeconds(reloadTime);//2秒後に処理
         Reload();
+
+    }
+
+    //void Shot_Assault() 
+    //{
+    //    Gage -= 0.3f;
+    //    for (int i = 0; i < bulleteCount[1]; i++)
+    //    {
+    //        vector *= -1;
+    //        Vector3 firestart = firepoint.position;
+
+    //        Vector3 BulleteSpawn = transform.right * 0.5f * vector;
+
+    //        GameObject Bullete = Instantiate(bullete[1], firestart+ BulleteSpawn, transform.rotation);//ターゲット方向に弾を生成して発射する
+    //        Rigidbody rb = Bullete.GetComponent<Rigidbody>();
+
+    //        DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
+    //        if (rb != null)
+    //        {
+    //            Vector3 forward = transform.forward;
+
+    //            // 右方向に散らす
+    //            Vector3 offset = transform.right * 0.5f;
+
+
+    //            rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
+    //        }
+    //    }
+    //}
+    void Shot_Assault()
+    {
+        if (!isShot)
+            StartCoroutine(AssaultBurst());
+    }
+    private IEnumerator AssaultBurst()
+    {
+        isShot = true;
+        Gage -= 0.3f;
+
+        int shots = 6;                  // 撃つ回数
+        float interval = 0.1f;          // 発射間隔（秒）
+        float sideOffset = 0.5f;        // 左右のズレ幅
+
+        for (int i = 0; i < shots; i++)
+        {
+            Vector3 firestart = firepoint.position;
+            Vector3 BulleteSpawn = transform.right * sideOffset * (i % 2 == 0 ? 1 : -1);
+
+            GameObject Bullete = Instantiate(bullete[1], firestart + BulleteSpawn, transform.rotation);
+            Rigidbody rb = Bullete.GetComponent<Rigidbody>();
+
+            if (rb != null)
+            {
+                DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
+                Vector3 forward = transform.forward;
+                rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
+            }
+
+            yield return new WaitForSeconds(interval); // ← 間隔を空ける
+        }
+
+        isShot = false;
+    }
+    private IEnumerator ShotDelay() 
+    {
+        yield return new WaitForSeconds(0.5f);
+
+
 
     }
 
