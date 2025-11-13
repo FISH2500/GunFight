@@ -41,7 +41,7 @@ public class Shot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        animator.SetBool("isForwardShot", false);
+        
         if (Gage < 0.9f&&isReload)//ゲージが満タンじゃないかつ発射後0.8s後に回復するようにクールタイムを設ける 
         {
             Gage += ChargeRate * Time.deltaTime;
