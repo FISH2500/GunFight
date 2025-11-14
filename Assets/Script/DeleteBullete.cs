@@ -4,6 +4,7 @@ public class DeleteBullete : MonoBehaviour
 {
     [SerializeField] private float Time;
     public float power;
+    public float uppower;
     public float Damage;
 
     void Start()

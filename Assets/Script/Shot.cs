@@ -25,7 +25,7 @@ public class Shot : MonoBehaviour
     bool isShotEnd=true;
     bool isReload=false;
     float vector = 1;
-    private enum PlayerType  { ShotGun, Assault };
+    private enum PlayerType  { ShotGun, Assault ,BomuThrow};
 
     [SerializeField] PlayerType player = new PlayerType();
 
@@ -120,18 +120,14 @@ public class Shot : MonoBehaviour
                         Shot_Assault();
                         break;
 
+                    case PlayerType.BomuThrow:
+                        Shot_Bomu();
+                        break;
+
                 }
 
-
-
-
             }
-
-            
         }
-
-
-
     }
 
     void Reload() 
@@ -235,12 +231,38 @@ public class Shot : MonoBehaviour
 
         isShot = false;
     }
-    private IEnumerator ShotDelay() 
+
+    void Shot_Bomu() 
     {
-        yield return new WaitForSeconds(0.5f);
+        if (!isShot)
+            StartCoroutine(Bomu());
+    }
+
+    private IEnumerator Bomu()
+    {
+        isShot = true;
+        Gage -= 0.3f;
+        float interval = 0.1f;
+
+        Vector3 firestart = firepoint.position;
+
+        GameObject Bullete = Instantiate(bullete[2], firestart, transform.rotation);
+        Rigidbody rb = Bullete.GetComponent<Rigidbody>();
+
+        if (rb != null)
+        {
+            DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
+            Vector3 forward = transform.forward;
+
+            Vector3 up = transform.up;
+
+            rb.AddForce((forward * deleteBullete.power + up*deleteBullete.uppower), ForceMode.Impulse);
+        }
 
 
+        yield return new WaitForSeconds(interval);
 
+        isShot = false;
     }
 
 
