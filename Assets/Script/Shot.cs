@@ -33,6 +33,10 @@ public class Shot : MonoBehaviour
 
     private Coroutine reCharge;
 
+    bool isShotCancel;
+
+    Vector2 oldJoyStick;
+
     void Start()
     {
         Gage = 0.9f;
@@ -42,6 +46,8 @@ public class Shot : MonoBehaviour
     void Update()
     {
         
+
+        isShotCancel = false;
         if (Gage < 0.9f&&isReload)//ゲージが満タンじゃないかつ発射後0.8s後に回復するようにクールタイムを設ける 
         {
             Gage += ChargeRate * Time.deltaTime;
@@ -50,7 +56,17 @@ public class Shot : MonoBehaviour
         }
 
         Vector2 dir = joystick.Direction;
-        if (dir != Vector2.zero)//射撃ボタンを動かしている時
+
+        Debug.Log(oldJoyStick.magnitude);
+
+        if (dir.magnitude>0.1f&&dir.magnitude <= 0.5f)//射撃をキャンセルする条件 スティックが0.5fより小さい場合
+        {
+            
+            isShotCancel = true;
+            oldJoyStick = dir;
+        }
+
+        if (dir != Vector2.zero&& dir.magnitude >= 0.4f)//射撃ボタンを動かしている時,スティックを伸ばしていない時
         {
             
             collidershape.gameObject.SetActive(true);
@@ -94,7 +110,7 @@ public class Shot : MonoBehaviour
                 isShotEnd = false;
             }
 
-            if (dir == Vector2.zero && !isShotEnd)//Gageが0より多い場合 
+            if (dir == Vector2.zero && !isShotEnd&&0.4f<oldJoyStick.magnitude)//Gageが0より多い場合 
             {
                 animator.SetBool("isForwardShot", true);
                 isReload = false;

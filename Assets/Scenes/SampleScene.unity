@@ -6677,7 +6677,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!54 &1705612104
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6863,7 +6863,7 @@ MonoBehaviour:
   Attack_joystick: {fileID: 1364862767}
   speed: 3
   animator: {fileID: 4507121342165919606}
-  shot: {fileID: 0}
+  shot: {fileID: 1705612109}
 --- !u!1 &1713527709
 GameObject:
   m_ObjectHideFlags: 0
@@ -14819,7 +14819,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &5293848344479280465
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14914,7 +14914,7 @@ MonoBehaviour:
   Attack_joystick: {fileID: 1364862767}
   speed: 3
   animator: {fileID: 4507121342165919606}
-  shot: {fileID: 0}
+  shot: {fileID: 5293848344479280469}
 --- !u!114 &5293848344479280469
 MonoBehaviour:
   m_ObjectHideFlags: 0
