@@ -1,12 +1,24 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 public class SpawnSystem : NetworkBehaviour
 {
+    public List<Vector3> spawnPos;
+
+
+    private void Awake()
+    {
+        
+    }
 
     public override void OnNetworkSpawn() 
     {
         Debug.Log("スポーン");//スポーンの時に呼ばれる
+
+        //transform.position = spawnPos[];
+
     }
 
 

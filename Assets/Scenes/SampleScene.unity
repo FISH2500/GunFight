@@ -8462,8 +8462,8 @@ GameObject:
   - component: {fileID: 1917524841}
   - component: {fileID: 1917524840}
   - component: {fileID: 1917524839}
-  - component: {fileID: 1917524844}
   - component: {fileID: 1917524843}
+  - component: {fileID: 1917524844}
   m_Layer: 0
   m_Name: Spawn
   m_TagString: Untagged
@@ -8598,6 +8598,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  spawnPos: []
 --- !u!1 &1918755647
 GameObject:
   m_ObjectHideFlags: 0

@@ -518,6 +518,7 @@ GameObject:
   - component: {fileID: 2120281056067110861}
   - component: {fileID: 5067177041085464145}
   - component: {fileID: -816879613047539192}
+  - component: {fileID: 6970702385721758893}
   m_Layer: 6
   m_Name: ShotGun
   m_TagString: Player
@@ -672,7 +673,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3493952403
+  GlobalObjectIdHash: 3862511681
   InScenePlacedSourceGlobalObjectIdHash: 3862511681
   DeferredDespawnTick: 0
   Ownership: 1
@@ -848,6 +849,19 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &6970702385721758893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1171680212378970383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 671d0462700bbbc4ba418083dbb5d9e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &1251489148921532922
 GameObject:
   m_ObjectHideFlags: 0
@@ -3768,6 +3782,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 955b04803ad37ff46a5ab204c3426e50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   Player: {fileID: 8132321294420903583}
 --- !u!1 &5442673385778427011
 GameObject:
