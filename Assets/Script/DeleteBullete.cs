@@ -1,20 +1,43 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class DeleteBullete : MonoBehaviour
+public class DeleteBullete : NetworkBehaviour
 {
     [SerializeField] private float Time;
     public float power;
     public float uppower;
     public float Damage;
+    public GameObject Owner;
+    public ulong OwnerID;
 
     void Start()
     {
+        if(IsServer)
         Destroy(gameObject,Time);
     }
 
     // Update is called once per frame
     void Update()
     {
+        Debug.Log("çUåÇé“"+OwnerID);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
         
+        //if (Owner==null) 
+        //{
+        //    Debug.LogError("î≠éÀêlï®Ç™ì¡íËÇ≈Ç´ÇƒÇ»Ç¢");
+        //}
+        //else 
+        //{
+        //    Debug.Log("î≠éÀêlï®ÅF" + Owner);
+        //}
+
+        if (other.tag == "Wall") 
+        {
+            if (IsServer)
+                Destroy(gameObject);
+        }
     }
 }

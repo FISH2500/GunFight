@@ -318,6 +318,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8de9176fdce090a4b80ae94871192af9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   Player: {fileID: 0}
   height: 2.7
 --- !u!1 &5379986340209316781
@@ -806,7 +807,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 4.11}
+  m_AnchoredPosition: {x: 0, y: 4.1099854}
   m_SizeDelta: {x: 1055, y: 505}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &6634931861157041020
@@ -854,7 +855,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &7119473606543992976
 MonoBehaviour:
   m_ObjectHideFlags: 0

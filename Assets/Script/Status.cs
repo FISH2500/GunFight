@@ -1,92 +1,115 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Status : MonoBehaviour
+public class Status : NetworkBehaviour
 {
     [SerializeField] private Image HPBar;
 
     [SerializeField]float MaxHP;
-    [SerializeField] float HP;
+    //[SerializeField] float HP;
     [SerializeField] float HealTime;
     [SerializeField] GameObject EnemyCanva;
 
+    private NetworkVariable<float> HP = new NetworkVariable<float>(
+       4000f,
+       NetworkVariableReadPermission.Everyone,
+       NetworkVariableWritePermission.Server
+   );
+
     private Coroutine Heal;
 
-    bool isHeal=false;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public override void OnNetworkSpawn()
     {
-        
+        // 変更があったら HPBar を更新
+        HP.OnValueChanged += OnHPChanged;
+
+        // スポーン時にも UI を更新
+        OnHPChanged(HP.Value, HP.Value);
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnHPChanged(float oldValue, float newValue)
     {
-        //if (HP < MaxHP&&isHeal) 
-        //{
-        //    Debug.Log("Heal...");
-        //    HP += MaxHP * 0.13f;//HPの13%ずつ回復する
+        // HPバー更新（全クライアント）
+        HPBar.fillAmount = newValue / MaxHP;
 
-        //    if(HP>MaxHP) HP = MaxHP;//上限を超えてしまった場合
-
-        //    HPBar.fillAmount = HP / MaxHP;
-
-        //    isHeal = false;
-
-        //    if (Heal != null)
-        //    {
-        //        StopCoroutine(Heal);
-        //    }
-        //    Heal = StartCoroutine(ReHeal());
-
-        //}
+        // HP 0 のときはクライアントでもキャンバス削除
+        if (newValue <= 0)
+        {
+            if (EnemyCanva != null)
+                Destroy(EnemyCanva);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.tag == "Bullete") 
+        if (!IsOwner) return;
+
+        DeleteBullete bullete = other.GetComponent<DeleteBullete>();
+
+        NetworkObject net = other.GetComponent<NetworkObject>();
+        //
+        if (other.CompareTag("Bullete") && net.OwnerClientId != bullete.OwnerID)//弾を打った人物じゃない場合
         {
-            Debug.Log("hit");
-            DeleteBullete bullte=other.gameObject.GetComponent<DeleteBullete>();
-            Debug.Log(bullte);
-            HP -= bullte.Damage;
-
-            HPBar.fillAmount = HP / MaxHP;
-
-            Destroy(other.gameObject);
-
-            if (HP <= 0) 
+            if (IsServer)
             {
-                Destroy(gameObject);
-                Destroy(EnemyCanva);
+                // ダメージの反映はサーバー
+                ApplyDamage(bullete.Damage);
+            }
+            else
+            {
+                // サーバーにリクエストを送る
+                ApplyDamageServerRpc(bullete.Damage);
             }
 
-            if (Heal != null)
-            {
-                StopCoroutine(Heal);
-            }
-            Heal = StartCoroutine(ReHeal());
-
-        }    
+            // 弾を消す
+            other.GetComponent<NetworkObject>().Despawn();
+        }
     }
-    
-    private IEnumerator ReHeal() 
+
+    // サーバー側で HP を減らす
+    [ServerRpc]
+    private void ApplyDamageServerRpc(float dmg)
+    {
+        ApplyDamage(dmg);
+    }
+
+    private void ApplyDamage(float dmg)
+    {
+        HP.Value -= dmg;
+
+        if (HP.Value <= 0)
+        {
+            HP.Value = 0;
+            Die();
+        }
+
+        // 回復ループ開始
+        if (Heal != null) StopCoroutine(Heal);
+        Heal = StartCoroutine(ReHeal());
+    }
+
+    private IEnumerator ReHeal()
     {
         yield return new WaitForSeconds(HealTime);
 
-        while (HP < MaxHP)
+        while (HP.Value < MaxHP)
         {
-            HP += MaxHP * 0.13f;
-            if (HP > MaxHP) HP = MaxHP;
+            HP.Value += MaxHP * 0.13f;
+            if (HP.Value > MaxHP) HP.Value = MaxHP;
 
-            HPBar.fillAmount = HP / MaxHP;
-            Debug.Log($"回復中... 現在HP: {HP}");
-
-            yield return new WaitForSeconds(1.5f); // 1.5秒ごとに回復
+            yield return new WaitForSeconds(HealTime);
         }
     }
-        
-    
+
+    // 死亡処理（サーバーのみ）
+    private void Die()
+    {
+        // 破壊はサーバー管理
+        if (IsServer)
+        {
+            GetComponent<NetworkObject>().Despawn();
+        }
+    }
 }

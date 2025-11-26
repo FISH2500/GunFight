@@ -1,10 +1,11 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.GraphicsBuffer;
 
-public class PlayerMOve : MonoBehaviour
+public class PlayerMOve : NetworkBehaviour
 {
     [SerializeField] private DynamicJoystick joystick;
-    [SerializeField] private FloatingJoystick Attack_joystick;
     [SerializeField] private float speed;
     [SerializeField] private Animator animator;
     [SerializeField] private Shot shot;
@@ -13,13 +14,14 @@ public class PlayerMOve : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        joystick = FindObjectOfType<DynamicJoystick>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        animator.SetBool("walk", false);
+        if (!IsOwner) return;
+        AnimatorInputServerRpc(false);
         Move();
         //FanShapeMove();
     }
@@ -28,41 +30,43 @@ public class PlayerMOve : MonoBehaviour
     {
         
         Vector2 dir = joystick.Direction;//UŒ‚—p‚Ìjoystick
-        Vector2 attackdir = Attack_joystick.Direction;//UŒ‚—p‚Ìjoystick
+        
         float rotationSpeed = 600f * Time.deltaTime; // ƒXƒ‰ƒCƒ€‚Ì‰ñ“]‘¬“x
         float moveX = joystick.Horizontal;
         float moveZ = joystick.Vertical;
         Vector3 target = new Vector3(moveX, 0, moveZ).normalized;
         if (dir != Vector2.zero)
         {
-            animator.SetBool("walk", true);
-            if (target.magnitude > 0.5f)
-            {
-                targetRotation = Quaternion.LookRotation(target, Vector3.up);
-            }
-            if(!shot.isShot) transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed);
-
+            AnimatorInputServerRpc(true);
+            RotationInputServerRpc(target, rotationSpeed);
         }
         Vector3 move = target * speed * Time.deltaTime;
 
-        transform.Translate(move, Space.World);
+        MoveInputServerRpc(move);
 
     }
+    [ServerRpc]
+    void MoveInputServerRpc(Vector3 move) 
+    {
+        transform.Translate(move, Space.World);
+    }
 
-    //void FanShapeMove() 
-    //{
-    //    Vector2 attackdir = Attack_joystick.Direction;//UŒ‚—p‚Ìjoystick
-    //    float rotationSpeed = 600f * Time.deltaTime; // ‰ñ“]‘¬“x
-    //    float moveX = Attack_joystick.Horizontal;
-    //    float moveZ = Attack_joystick.Vertical;
-    //    Vector3 target = new Vector3(moveX, 0, moveZ).normalized;
+    [ServerRpc]
+    void AnimatorInputServerRpc(bool isActive)
+    {
+        animator.SetBool("walk", isActive);
+    }
 
-    //    if (target.magnitude > 0.5f)
-    //    {
-    //        targetRotation = Quaternion.LookRotation(target, Vector3.up);
-    //    }
-    //    fanshape.transform.rotation = Quaternion.RotateTowards(fanshape.transform.rotation, targetRotation, rotationSpeed);
-    //}
+    [ServerRpc]
+    void RotationInputServerRpc(Vector3 target,float rotationSpeed)
+    {
+        if (target.magnitude > 0.5f)
+        {
+            targetRotation = Quaternion.LookRotation(target, Vector3.up);
+        }
+        if (!shot.isShot) transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed);
+
+    }
 
 
 }

@@ -162,6 +162,7 @@ GameObject:
   - component: {fileID: 4550926546079371661}
   - component: {fileID: 1709830683898464369}
   - component: {fileID: 6169485210228470171}
+  - component: {fileID: -3489178111228728553}
   - component: {fileID: 4685798766339260983}
   - component: {fileID: 7671282949983540878}
   - component: {fileID: 2221006329445493930}
@@ -266,6 +267,31 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-3489178111228728553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6909123989779136283}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2468131488
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &4685798766339260983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -278,9 +304,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ba6b9aac36be2d4a8434a1a8404d2bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   joystick: {fileID: 0}
-  Attack_joystick: {fileID: 0}
   speed: 3
+  animator: {fileID: 0}
+  shot: {fileID: 0}
 --- !u!114 &7671282949983540878
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -294,15 +322,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   joystick: {fileID: 0}
-  bullete: {fileID: 6160047473313373781, guid: cf6a13a2c8e1372499f032653921f4dd, type: 3}
+  bullete:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   firepoint: {fileID: 3161577814175114461}
-  fanshape: {fileID: 7334210805242849684}
+  collidershape: {fileID: 0}
+  addRotateValue: 0
   power: 15
-  bulleteCount: 3
+  bulleteCount: []
   bulleteGage_Orange: {fileID: 0}
   bulleteGage_Gray: {fileID: 0}
   Gage: 0
+  animator: {fileID: 0}
   reloadTime: 0.8
+  isShot: 0
+  player: 0
   ChargeRate: 0.15
 --- !u!54 &2221006329445493930
 Rigidbody:

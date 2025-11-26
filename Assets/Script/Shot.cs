@@ -1,8 +1,9 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Shot : MonoBehaviour
+public class Shot : NetworkBehaviour
 {
     [SerializeField] private FloatingJoystick joystick;
     [SerializeField] private GameObject[] bullete;
@@ -11,6 +12,7 @@ public class Shot : MonoBehaviour
     [SerializeField] private float addRotateValue;
     [SerializeField] private float power;
     [SerializeField] private float[] bulleteCount;
+    [SerializeField] private GameObject bulleteGage_Parent;
     [SerializeField] private Image bulleteGage_Orange;
     [SerializeField] private Image bulleteGage_Gray;
     [SerializeField] private float Gage;
@@ -39,14 +41,24 @@ public class Shot : MonoBehaviour
 
     void Start()
     {
+
+        joystick = FindObjectOfType<FloatingJoystick>();
+
         Gage = 0.9f;
+        collidershape.gameObject.SetActive(false);
+        if (IsOwner) 
+        {
+            bulleteGage_Parent.SetActive(true);//ゲージの親オブジェクトを取得して、自分自身ならりリロードゲージを表示
+        }
+
+
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!IsOwner) return;
         
-
         isShotCancel = false;
         if (Gage < 0.9f&&isReload)//ゲージが満タンじゃないかつ発射後0.8s後に回復するようにクールタイムを設ける 
         {
@@ -56,7 +68,7 @@ public class Shot : MonoBehaviour
         }
 
         Vector2 dir = joystick.Direction;
-
+        Debug.Log(dir);
         Debug.Log(oldJoyStick.magnitude);
 
         if (dir.magnitude>0.1f&&dir.magnitude <= 0.5f)//射撃をキャンセルする条件 スティックが0.5fより小さい場合
@@ -110,11 +122,11 @@ public class Shot : MonoBehaviour
                 isShotEnd = false;
             }
 
-            if (dir == Vector2.zero && !isShotEnd&&0.4f<oldJoyStick.magnitude)//Gageが0より多い場合 
+            if (dir == Vector2.zero && !isShotEnd&&0.15f<oldJoyStick.magnitude)//Gageが0より多い場合 
             {
                 animator.SetBool("isForwardShot", true);
                 isReload = false;
-                Debug.Log("攻撃");
+                Debug.Log("攻撃"+oldJoyStick.magnitude);
                 isShotEnd = true;
                 //isShot = true;
                 if (reCharge != null)//もし前のこるーちんが処理中の場合ストップする 
@@ -122,8 +134,8 @@ public class Shot : MonoBehaviour
                     StopCoroutine(reCharge);
                 }
                 reCharge = StartCoroutine(ReChargeBullete());//新しくこるーちんの処理を開始する
-                transform.rotation = Quaternion.LookRotation(target);
 
+                RotateServerRpc(target);
                 switch (player)
                 {
                     case PlayerType.ShotGun:
@@ -159,23 +171,10 @@ public class Shot : MonoBehaviour
         Gage -= 0.3f;
         for (int i = 0; i < bulleteCount[0]; i++)
         {
+            BulleteServerRpc(i,target,OwnerClientId);
 
-            Vector3 firestart = firepoint.position;
 
-            GameObject Bullete = Instantiate(bullete[0], firestart, transform.rotation);//ターゲット方向に弾を生成して発射する
-            Rigidbody rb = Bullete.GetComponent<Rigidbody>();
 
-            DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
-            if (rb != null)
-            {
-                Vector3 right = transform.right;
-
-                // 右方向に散らす
-                float offset = (i - (bulleteCount[0] - 1) / 2f) * 0.2f;
-                Vector3 spreadDir = (target + right * offset).normalized;
-
-                rb.AddForce(spreadDir * deleteBullete.power, ForceMode.Impulse);
-            }
         }
     }
 
@@ -187,32 +186,6 @@ public class Shot : MonoBehaviour
 
     }
 
-    //void Shot_Assault() 
-    //{
-    //    Gage -= 0.3f;
-    //    for (int i = 0; i < bulleteCount[1]; i++)
-    //    {
-    //        vector *= -1;
-    //        Vector3 firestart = firepoint.position;
-
-    //        Vector3 BulleteSpawn = transform.right * 0.5f * vector;
-
-    //        GameObject Bullete = Instantiate(bullete[1], firestart+ BulleteSpawn, transform.rotation);//ターゲット方向に弾を生成して発射する
-    //        Rigidbody rb = Bullete.GetComponent<Rigidbody>();
-
-    //        DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
-    //        if (rb != null)
-    //        {
-    //            Vector3 forward = transform.forward;
-
-    //            // 右方向に散らす
-    //            Vector3 offset = transform.right * 0.5f;
-
-
-    //            rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
-    //        }
-    //    }
-    //}
     void Shot_Assault()
     {
         if (!isShot)
@@ -226,21 +199,11 @@ public class Shot : MonoBehaviour
         int shots = 6;                  // 撃つ回数
         float interval = 0.1f;          // 発射間隔（秒）
         float sideOffset = 0.5f;        // 左右のズレ幅
-
+        
         for (int i = 0; i < shots; i++)
         {
-            Vector3 firestart = firepoint.position;
-            Vector3 BulleteSpawn = transform.right * sideOffset * (i % 2 == 0 ? 1 : -1);
 
-            GameObject Bullete = Instantiate(bullete[1], firestart + BulleteSpawn, transform.rotation);
-            Rigidbody rb = Bullete.GetComponent<Rigidbody>();
-
-            if (rb != null)
-            {
-                DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
-                Vector3 forward = transform.forward;
-                rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
-            }
+            Assault_BulleteServerRpc(i, sideOffset, OwnerClientId);
 
             yield return new WaitForSeconds(interval); // ← 間隔を空ける
         }
@@ -268,17 +231,77 @@ public class Shot : MonoBehaviour
         if (rb != null)
         {
             DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
+            deleteBullete.Owner = gameObject;
             Vector3 forward = transform.forward;
 
             Vector3 up = transform.up;
 
-            rb.AddForce((forward * deleteBullete.power + up*deleteBullete.uppower), ForceMode.Impulse);
+            rb.AddForce((forward * deleteBullete.power*(oldJoyStick.magnitude*10) + up*deleteBullete.uppower), ForceMode.Impulse);
         }
 
 
         yield return new WaitForSeconds(interval);
 
         isShot = false;
+    }
+    [ServerRpc]
+    void RotateServerRpc(Vector3 h_target) 
+    {
+        transform.rotation = Quaternion.LookRotation(h_target);
+    }
+
+    [ServerRpc]
+    void BulleteServerRpc(int i,Vector3 h_target,ulong shooterID) 
+    {
+        Vector3 firestart = firepoint.position;
+
+        GameObject Bullete = Instantiate(bullete[0], firestart, transform.rotation);//ターゲット方向に弾を生成して発射する
+
+        var netObj=  Bullete.GetComponent<NetworkObject>();
+
+        netObj.Spawn();
+
+        Rigidbody rb = Bullete.GetComponent<Rigidbody>();
+
+        DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
+
+        //deleteBullete.Owner = gameObject;
+        deleteBullete.OwnerID = shooterID;
+        if (rb != null)
+        {
+            Vector3 right = transform.right;
+
+            // 右方向に散らす
+            float offset = (i - (bulleteCount[0] - 1) / 2f) * 0.2f;
+            Vector3 spreadDir = (h_target + right * offset).normalized;
+
+            rb.AddForce(spreadDir * deleteBullete.power, ForceMode.Impulse);
+
+            Debug.Log("speedDir" + spreadDir + "power" + deleteBullete.power);
+        }
+    }
+
+    [ServerRpc]
+    void Assault_BulleteServerRpc(int i, float sideOffset,ulong shooterID)
+    {
+        Vector3 firestart = firepoint.position;
+        Vector3 BulleteSpawn = transform.right * sideOffset * (i % 2 == 0 ? 1 : -1);
+
+        GameObject Bullete = Instantiate(bullete[1], firestart + BulleteSpawn, transform.rotation);
+        var netObj = Bullete.GetComponent<NetworkObject>();
+
+        netObj.Spawn();
+        Rigidbody rb = Bullete.GetComponent<Rigidbody>();
+
+        if (rb != null)
+        {
+            
+            DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
+            //deleteBullete.Owner = gameObject;
+            deleteBullete.OwnerID = shooterID;
+            Vector3 forward = transform.forward;
+            rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
+        }
     }
 
 
