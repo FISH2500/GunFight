@@ -8,7 +8,7 @@ public class DeleteBullete : NetworkBehaviour
     public float uppower;
     public float Damage;
     public GameObject Owner;
-    public ulong OwnerID;
+    public NetworkVariable<ulong> OwnerID=new NetworkVariable<ulong>();
 
     void Start()
     {
@@ -37,7 +37,7 @@ public class DeleteBullete : NetworkBehaviour
         if (other.tag == "Wall") 
         {
             if (IsServer)
-                Destroy(gameObject);
+                GetComponent<NetworkObject>().Despawn();
         }
     }
 }

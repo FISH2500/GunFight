@@ -20,13 +20,10 @@ public class Shot : NetworkBehaviour
 
     public float reloadTime = 0.8f;  // リロードにかかる時間
 
-    private Quaternion targetRotation;
     private Vector3 target;
     private Vector3 fanShapetarget;
     public bool isShot = false;
-    bool isShotEnd=true;
-    bool isReload=false;
-    float vector = 1;
+
     private enum PlayerType  { ShotGun, Assault ,BomuThrow};
 
     [SerializeField] PlayerType player = new PlayerType();
@@ -35,15 +32,17 @@ public class Shot : NetworkBehaviour
 
     private Coroutine reCharge;
 
-    bool isShotCancel;
 
-    Vector2 oldJoyStick;
+    private bool isShotEnd = false;
+    private bool isReload = false;
+    private bool shooting = false;
+    private Vector2 oldJoyStick;
 
     void Start()
     {
 
         joystick = FindObjectOfType<FloatingJoystick>();
-
+        joystick.enabled = false;
         Gage = 0.9f;
         collidershape.gameObject.SetActive(false);
         if (IsOwner) 
@@ -59,7 +58,6 @@ public class Shot : NetworkBehaviour
     {
         if (!IsOwner) return;
         
-        isShotCancel = false;
         if (Gage < 0.9f&&isReload)//ゲージが満タンじゃないかつ発射後0.8s後に回復するようにクールタイムを設ける 
         {
             Gage += ChargeRate * Time.deltaTime;
@@ -68,13 +66,11 @@ public class Shot : NetworkBehaviour
         }
 
         Vector2 dir = joystick.Direction;
-        Debug.Log(dir);
-        Debug.Log(oldJoyStick.magnitude);
+
 
         if (dir.magnitude>0.1f&&dir.magnitude <= 0.5f)//射撃をキャンセルする条件 スティックが0.5fより小さい場合
         {
             
-            isShotCancel = true;
             oldJoyStick = dir;
         }
 
@@ -85,8 +81,19 @@ public class Shot : NetworkBehaviour
             float fanMoveX = joystick.Horizontal;
             float fanMoveZ = joystick.Vertical;
 
+            Vector3 camForward = Camera.main.transform.forward;
+            Vector3 camRight = Camera.main.transform.right;
 
-            fanShapetarget = new Vector3(fanMoveX, 0, fanMoveZ).normalized;
+            // 上方向の成分を消す（地面方向だけ使う）
+            camForward.y = 0;
+            camRight.y = 0;
+
+            camForward.Normalize();
+            camRight.Normalize();
+
+
+            //fanShapetarget = new Vector3(fanMoveX, 0, fanMoveZ).normalized;
+            fanShapetarget = camForward*fanMoveZ+camRight*fanMoveX;
 
             Quaternion baseRotation = Quaternion.LookRotation(fanShapetarget);
 
@@ -94,7 +101,9 @@ public class Shot : NetworkBehaviour
         }
         else 
         {
+            
             collidershape.gameObject.SetActive(false);
+
         }
         bulleteGage_Orange.fillAmount = Gage;
 
@@ -112,21 +121,37 @@ public class Shot : NetworkBehaviour
 
             Vector2 dir = joystick.Direction;
 
-            if (dir != Vector2.zero)
+            if (dir != Vector2.zero)//joystickを動かしている場合
             {
                 float moveX = joystick.Horizontal;
                 float moveZ = joystick.Vertical;
+                Vector3 camForward = Camera.main.transform.forward;
+                Vector3 camRight = Camera.main.transform.right;
 
+                // 上方向の成分を消す（地面方向だけ使う）
+                camForward.y = 0;
+                camRight.y = 0;
 
-                target = new Vector3(moveX, 0, moveZ).normalized;
+                camForward.Normalize();
+                camRight.Normalize();
+
+                //target = new Vector3(moveX, 0, moveZ).normalized;
+
+                target=camForward*moveZ+camRight*moveX;
+                
                 isShotEnd = false;
+
+                //if(!shooting) shooting = false;
+
             }
 
-            if (dir == Vector2.zero && !isShotEnd&&0.15f<oldJoyStick.magnitude)//Gageが0より多い場合 
+            if (dir == Vector2.zero && !isShotEnd&&0.4f<oldJoyStick.magnitude&&!shooting)//Gageが0より多い場合 
             {
+                
                 animator.SetBool("isForwardShot", true);
                 isReload = false;
-                Debug.Log("攻撃"+oldJoyStick.magnitude);
+                shooting = true;
+                
                 isShotEnd = true;
                 //isShot = true;
                 if (reCharge != null)//もし前のこるーちんが処理中の場合ストップする 
@@ -145,6 +170,7 @@ public class Shot : NetworkBehaviour
                         break;
 
                     case PlayerType.Assault:
+                        
                         Shot_Assault();
                         break;
 
@@ -172,10 +198,8 @@ public class Shot : NetworkBehaviour
         for (int i = 0; i < bulleteCount[0]; i++)
         {
             BulleteServerRpc(i,target,OwnerClientId);
-
-
-
         }
+        shooting = false;
     }
 
     private IEnumerator ReChargeBullete() 
@@ -193,7 +217,8 @@ public class Shot : NetworkBehaviour
     }
     private IEnumerator AssaultBurst()
     {
-        isShot = true;
+        
+        Debug.Log("shot" + isShot);
         Gage -= 0.3f;
 
         int shots = 6;                  // 撃つ回数
@@ -207,8 +232,10 @@ public class Shot : NetworkBehaviour
 
             yield return new WaitForSeconds(interval); // ← 間隔を空ける
         }
-
-        isShot = false;
+        shooting = false;
+        isShotEnd = true;
+        IsShotCancelServerRpc();
+        //isShot = false;
     }
 
     void Shot_Bomu() 
@@ -231,7 +258,7 @@ public class Shot : NetworkBehaviour
         if (rb != null)
         {
             DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
-            deleteBullete.Owner = gameObject;
+            //deleteBullete.Owner = gameObject;
             Vector3 forward = transform.forward;
 
             Vector3 up = transform.up;
@@ -242,7 +269,7 @@ public class Shot : NetworkBehaviour
 
         yield return new WaitForSeconds(interval);
 
-        isShot = false;
+        
     }
     [ServerRpc]
     void RotateServerRpc(Vector3 h_target) 
@@ -265,8 +292,9 @@ public class Shot : NetworkBehaviour
 
         DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
 
-        //deleteBullete.Owner = gameObject;
-        deleteBullete.OwnerID = shooterID;
+        deleteBullete.Owner = gameObject;
+        Debug.Log("発射ID" + shooterID);
+        deleteBullete.OwnerID.Value = shooterID;
         if (rb != null)
         {
             Vector3 right = transform.right;
@@ -284,13 +312,14 @@ public class Shot : NetworkBehaviour
     [ServerRpc]
     void Assault_BulleteServerRpc(int i, float sideOffset,ulong shooterID)
     {
+        isShot = true;
         Vector3 firestart = firepoint.position;
         Vector3 BulleteSpawn = transform.right * sideOffset * (i % 2 == 0 ? 1 : -1);
 
         GameObject Bullete = Instantiate(bullete[1], firestart + BulleteSpawn, transform.rotation);
         var netObj = Bullete.GetComponent<NetworkObject>();
 
-        netObj.Spawn();
+        
         Rigidbody rb = Bullete.GetComponent<Rigidbody>();
 
         if (rb != null)
@@ -298,10 +327,18 @@ public class Shot : NetworkBehaviour
             
             DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
             //deleteBullete.Owner = gameObject;
-            deleteBullete.OwnerID = shooterID;
+            //Debug.Log("発射ID"+shooterID);
+            deleteBullete.OwnerID.Value = shooterID;
+            netObj.Spawn();
             Vector3 forward = transform.forward;
             rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
         }
+    }
+
+    [ServerRpc]
+    void IsShotCancelServerRpc() 
+    {
+        isShot= false;
     }
 
 

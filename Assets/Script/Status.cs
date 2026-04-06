@@ -20,6 +20,8 @@ public class Status : NetworkBehaviour
 
     private Coroutine Heal;
 
+
+
     public override void OnNetworkSpawn()
     {
         // 変更があったら HPBar を更新
@@ -44,13 +46,15 @@ public class Status : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!IsOwner) return;
+        //if (!IsOwner) return;
 
         DeleteBullete bullete = other.GetComponent<DeleteBullete>();
-
-        NetworkObject net = other.GetComponent<NetworkObject>();
         //
-        if (other.CompareTag("Bullete") && net.OwnerClientId != bullete.OwnerID)//弾を打った人物じゃない場合
+        Debug.Log("clientID:bullete.owner"+ OwnerClientId + ":" + bullete.OwnerID.Value);
+
+        
+
+        if (other.CompareTag("Bullete") &&OwnerClientId!=bullete.OwnerID.Value)//弾を打った人物じゃない場合
         {
             if (IsServer)
             {
@@ -111,5 +115,8 @@ public class Status : NetworkBehaviour
         {
             GetComponent<NetworkObject>().Despawn();
         }
+
+        GameManager.instance.Finish();
+
     }
 }

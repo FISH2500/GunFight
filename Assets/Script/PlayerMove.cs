@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using static UnityEngine.GraphicsBuffer;
 
-public class PlayerMOve : NetworkBehaviour
+public class PlayerMove : NetworkBehaviour
 {
     [SerializeField] private DynamicJoystick joystick;
     [SerializeField] private float speed;
@@ -15,6 +15,7 @@ public class PlayerMOve : NetworkBehaviour
     void Start()
     {
         joystick = FindObjectOfType<DynamicJoystick>();
+        joystick.enabled = false;
     }
 
     // Update is called once per frame
@@ -34,7 +35,28 @@ public class PlayerMOve : NetworkBehaviour
         float rotationSpeed = 600f * Time.deltaTime; // スライムの回転速度
         float moveX = joystick.Horizontal;
         float moveZ = joystick.Vertical;
-        Vector3 target = new Vector3(moveX, 0, moveZ).normalized;
+
+
+        //if (dir.magnitude<0.3f)
+        //{
+        //    return;
+        //}
+
+
+        Vector3 camForward = Camera.main.transform.forward;
+        Vector3 camRight = Camera.main.transform.right;
+
+        // 上方向の成分を消す（地面方向だけ使う）
+        camForward.y = 0;
+        camRight.y = 0;
+
+        camForward.Normalize();
+        camRight.Normalize();
+
+        //Vector3 target = new Vector3(moveX, 0, moveZ).normalized;
+
+        Vector3 target=moveX*camRight+moveZ*camForward;
+
         if (dir != Vector2.zero)
         {
             AnimatorInputServerRpc(true);

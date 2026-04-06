@@ -104,7 +104,7 @@ public class Enemy : MonoBehaviour
                 break;
 
             case EnemyState.Attack:
-
+                Attack();
                 break;
             case EnemyState.Run:
 
@@ -118,9 +118,7 @@ public class Enemy : MonoBehaviour
 
         if (distance < attackDistance)//UŒ‚ó‘Ô 
         {
-
-            Attack();
-
+            state = EnemyState.Attack;
         }
         //if(distance<idleDistance)//‹——£‚ª‹ß‚·‚¬‚½‚çŽ~‚Ü‚é
         //{

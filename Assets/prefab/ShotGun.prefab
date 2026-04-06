@@ -518,7 +518,7 @@ GameObject:
   - component: {fileID: 2120281056067110861}
   - component: {fileID: 5067177041085464145}
   - component: {fileID: -816879613047539192}
-  - component: {fileID: 6970702385721758893}
+  - component: {fileID: 8792502469360826057}
   m_Layer: 6
   m_Name: ShotGun
   m_TagString: Player
@@ -849,7 +849,7 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &6970702385721758893
+--- !u!114 &8792502469360826057
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -862,6 +862,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  spawn:
+    spawnPos:
+    - {x: 0, y: 1.5, z: -15}
+    - {x: 0, y: 1.5, z: 35}
+    spawnRot:
+    - {x: 0, y: 0, z: 0, w: 0}
+    - {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  cam: {fileID: 3646616164011324468}
 --- !u!1 &1251489148921532922
 GameObject:
   m_ObjectHideFlags: 0
@@ -2453,7 +2461,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0.55372715, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3647,7 +3655,7 @@ GameObject:
   - component: {fileID: 3646616164011324468}
   m_Layer: 6
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3660,13 +3668,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5392222152547083836}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3976283, y: -0, z: -0, w: 0.91754663}
+  m_LocalRotation: {x: 0.46174863, y: 0, z: 0, w: 0.8870109}
   m_LocalPosition: {x: 0, y: 68.75, z: -50}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8132321294420903583}
-  m_LocalEulerAnglesHint: {x: 44.89, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 55, y: 0, z: 0}
 --- !u!20 &4961829431448966517
 Camera:
   m_ObjectHideFlags: 0
@@ -6966,7 +6974,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9150505986800962655}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1

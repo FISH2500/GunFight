@@ -8,16 +8,24 @@ public class CameraMove : NetworkBehaviour
     Quaternion cameraRot;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
+
+    private void Awake()
+    {
+        
+    }
+
     void Start()
     {
         cameraRot = transform.rotation;
 
-        if (!IsLocalPlayer) 
+        if (!IsLocalPlayer)
         {
             gameObject.SetActive(false);
         }
 
         transform.SetParent(null);
+
+
 
     }
 
@@ -27,9 +35,13 @@ public class CameraMove : NetworkBehaviour
         
         if (Player != null)
         {
-            Vector3 player = Player.transform.position;
+            // ÉvÉåÉCÉÑÅ[ÇÃå„ÇÎï˚å¸Ç÷10ó£Ç∑
+            Vector3 offset = -transform.forward * 15f;
 
-            transform.position = new Vector3(player.x, player.y + 13.75f, player.z - 10);
+            // è„ï˚å¸ÇÕå≈íË
+            offset += new Vector3(0, 10f, 0);
+
+            transform.position = Player.position + offset;
         }
     }
 
@@ -37,4 +49,6 @@ public class CameraMove : NetworkBehaviour
     {
         transform.rotation = cameraRot;
     }
+
+
 }
