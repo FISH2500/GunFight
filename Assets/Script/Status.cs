@@ -46,7 +46,6 @@ public class Status : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        //if (!IsOwner) return;
 
         DeleteBullete bullete = other.GetComponent<DeleteBullete>();
         //
@@ -83,7 +82,7 @@ public class Status : NetworkBehaviour
     {
         HP.Value -= dmg;
 
-        if (HP.Value <= 0)
+        if (HP.Value <= 0)//Ž€–Sˆ—
         {
             HP.Value = 0;
             Die();
@@ -110,13 +109,21 @@ public class Status : NetworkBehaviour
     // Ž€–Sˆ—iƒT[ƒo[‚Ì‚Ýj
     private void Die()
     {
+        Debug.Log("”s–kŽÒID"+OwnerClientId);
+        BattleManager.instance.ResultServerRpc(OwnerClientId);
+
         // ”j‰ó‚ÍƒT[ƒo[ŠÇ—
         if (IsServer)
         {
             GetComponent<NetworkObject>().Despawn();
         }
 
-        GameManager.instance.Finish();
+        
 
+        GameManager.instance.FinishServerRpc();
+
+        //NetworkObject.OwnerClientId
+
+        
     }
 }

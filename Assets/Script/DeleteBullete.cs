@@ -16,24 +16,8 @@ public class DeleteBullete : NetworkBehaviour
         Destroy(gameObject,Time);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        Debug.Log("UŒ‚Ò"+OwnerID);
-    }
-
     private void OnTriggerEnter(Collider other)
     {
-        
-        //if (Owner==null) 
-        //{
-        //    Debug.LogError("”­Ël•¨‚ª“Á’è‚Å‚«‚Ä‚È‚¢");
-        //}
-        //else 
-        //{
-        //    Debug.Log("”­Ël•¨F" + Owner);
-        //}
-
         if (other.tag == "Wall") 
         {
             if (IsServer)

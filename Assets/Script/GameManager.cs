@@ -95,15 +95,16 @@ public class GameManager : NetworkBehaviour
         isStart.Value = true;
     }
 
-    public void Finish() 
+    [ServerRpc]
+    public void FinishServerRpc() 
     {
-        SetLeaveServerRpc();
+        SetLeaveClientRpc();
     }
 
 
-    [ServerRpc]
 
-    void SetLeaveServerRpc() 
+    [ClientRpc]
+    private void SetLeaveClientRpc() 
     {
         leaveButtonObj.SetActive(true);
     }
