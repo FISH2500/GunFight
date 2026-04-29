@@ -22,6 +22,12 @@ public class SelectMode : NetworkBehaviour
 
     [SerializeField]
     GameObject SelectCharButton;
+
+    [SerializeField]
+    SpawnSystem spawnSystem;
+
+    
+
     private bool isTrigger=false;
 
     CharSelect select;
@@ -51,11 +57,11 @@ public class SelectMode : NetworkBehaviour
     public void Host()//ホストを選択した場合s 
     {
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
-        NetworkManager.StartHost();
+        //NetworkManager.StartHost();
         
         GameStart();
 
-        PlayerSpawnServerRpc(OwnerClientId, gIndex);
+        PlayerSpawnServerRpc(gIndex);
 
     }
 
@@ -64,7 +70,7 @@ public class SelectMode : NetworkBehaviour
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         
 
-        NetworkManager.StartClient();
+        //NetworkManager.StartClient();
         
         GameStart();
 
@@ -95,7 +101,7 @@ public class SelectMode : NetworkBehaviour
         if (clientId == NetworkManager.LocalClientId)
         {
             GameStart();
-            PlayerSpawnServerRpc(clientId, gIndex);
+            PlayerSpawnServerRpc(gIndex);
         }
 
         NetworkManager.OnClientConnectedCallback -= OnClientConnected;
@@ -118,14 +124,17 @@ public class SelectMode : NetworkBehaviour
         
     }
 
-    [ServerRpc(RequireOwnership =false)]
-    public void PlayerSpawnServerRpc(ulong clientID,int index) 
+    [ServerRpc(RequireOwnership = false)]
+    public void PlayerSpawnServerRpc(int index, ServerRpcParams rpcParams = default)
     {
+        ulong clientID = rpcParams.Receive.SenderClientId;
+
         GameObject prefab = select.Character[index];
 
-        //Vector3 spawnPos = Vector3.zero; // スポーン位置（必要なら変更）
+        spawnSystem.SetSpawnPosition(prefab, clientID);
 
         var playerObj = Instantiate(prefab);
+
         playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
     }
 

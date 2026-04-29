@@ -5,7 +5,13 @@ using UnityEngine.UI;
 
 public class Status : NetworkBehaviour
 {
+    [SerializeField] private GameObject playerHpBar;
+
+    [SerializeField] private GameObject enemyHpBar;
+
     [SerializeField] private Image HPBar;
+
+    [SerializeField] private Image EnemyHpBar;
 
     [SerializeField]float MaxHP;
     //[SerializeField] float HP;
@@ -21,7 +27,19 @@ public class Status : NetworkBehaviour
     private Coroutine Heal;
 
 
-
+    private void Start()
+    {
+        if (IsLocalPlayer) 
+        {
+            playerHpBar.gameObject.SetActive( true );
+            enemyHpBar.gameObject.SetActive( false );
+        }
+        else 
+        {
+            playerHpBar.gameObject.SetActive(false);
+            enemyHpBar.gameObject.SetActive(true);
+        }
+    }
     public override void OnNetworkSpawn()
     {
         // 変更があったら HPBar を更新
@@ -34,8 +52,14 @@ public class Status : NetworkBehaviour
     private void OnHPChanged(float oldValue, float newValue)
     {
         // HPバー更新（全クライアント）
-        HPBar.fillAmount = newValue / MaxHP;
-
+        if (IsLocalPlayer)
+        {
+            HPBar.fillAmount = newValue / MaxHP;
+        } 
+        else 
+        {
+            EnemyHpBar.fillAmount = newValue / MaxHP;
+        }
         // HP 0 のときはクライアントでもキャンバス削除
         if (newValue <= 0)
         {

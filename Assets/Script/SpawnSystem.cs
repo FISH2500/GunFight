@@ -8,7 +8,7 @@ public class SpawnSystem : NetworkBehaviour
     [System.Serializable]
     public class Spawn
     {
-        public List<Vector3> spawnPos=new List<Vector3>();
+        public List<Transform> spawnPos=new List<Transform>();
         public List<Quaternion> spawnRot = new List<Quaternion>();
 
 
@@ -20,20 +20,30 @@ public class SpawnSystem : NetworkBehaviour
     [SerializeField]
     CameraMove cam;
 
+    //NetworkVariable<char> spawnID = new NetworkVariable<char>();
+
+    int spawnCount = 0;
+
     int clientId;
 
     private void Awake()
     {
-        clientId = NetworkManager.ConnectedClients.Count;
-        transform.position = spawn.spawnPos[clientId - 1];
-        transform.rotation = spawn.spawnRot[clientId - 1];
+        //接続したPlayerのオブジェクトを取得
 
     }
 
-    public override void OnNetworkSpawn() 
+    //public override void OnNetworkSpawn() 
+    //{
+    //    //cam.SetCam();
+    //    Debug.Log("スポーン");//スポーンの時に呼ばれる
+    //    Debug.Log("ID:" + clientId);
+    //}
+
+    public void SetSpawnPosition(GameObject spawnPlayer,ulong clientID) //スポーンしたオブジェクトと何番目にスポーンしたPlayerであるか確認するspawnIDを引数とする
     {
-        //cam.SetCam();
-        Debug.Log("スポーン");//スポーンの時に呼ばれる
-        Debug.Log("ID:" + clientId);
+        //clientIDをもとに回転,場所をきめる
+        spawnPlayer.transform.rotation = spawn.spawnRot[(int)clientID];
+        spawnPlayer.transform.position = spawn.spawnPos[(int)clientID].position;
     }
+
 }
