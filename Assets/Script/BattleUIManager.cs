@@ -1,9 +1,13 @@
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
 public class BattleUIManager : MonoBehaviour
 {
     public static BattleUIManager instance { private set; get; }
+
+    [SerializeField]
+    TextMeshProUGUI[] nameText;
 
     [SerializeField]
     TextMeshProUGUI[] scoreText;
@@ -22,6 +26,13 @@ public class BattleUIManager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    //ScoreボードのNameを出力
+    public void OutPutScoreName(ulong playerID,string name) 
+    {
+
+        nameText[(int)playerID].text = name;
     }
 
     public void OutPutScoreText(int playerID,int score) 

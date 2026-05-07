@@ -59,5 +59,7 @@ public class SetName : NetworkBehaviour
     void UpdateName(string name) 
     {
         gameObject.GetComponent<TextMeshProUGUI>().text = name;
+        if(BattleUIManager.instance!=null)
+        BattleUIManager.instance.OutPutScoreName(OwnerClientId, name);
     }
 }
