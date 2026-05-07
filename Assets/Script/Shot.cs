@@ -2,6 +2,7 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class Shot : NetworkBehaviour
 {
@@ -41,7 +42,8 @@ public class Shot : NetworkBehaviour
     void Start()
     {
 
-        joystick = FindObjectOfType<FloatingJoystick>();
+
+        FindFloatingJoyStick();
         joystick.enabled = false;
         Gage = 0.9f;
         collidershape.gameObject.SetActive(false);
@@ -65,8 +67,8 @@ public class Shot : NetworkBehaviour
             if (Gage > 0.9f) Gage = 0.9f;
         }
 
-        Vector2 dir = joystick.Direction;
-
+        //Vector2 dir = joystick.Direction;
+        Vector2 dir = Gamepad.current.rightStick.ReadValue();//右スティックを参照
 
         if (dir.magnitude>0.1f&&dir.magnitude <= 0.5f)//射撃をキャンセルする条件 スティックが0.5fより小さい場合
         {
@@ -78,8 +80,11 @@ public class Shot : NetworkBehaviour
         {
             
             collidershape.gameObject.SetActive(true);
-            float fanMoveX = joystick.Horizontal;
-            float fanMoveZ = joystick.Vertical;
+            //float fanMoveX = joystick.Horizontal;
+            //float fanMoveZ = joystick.Vertical;
+
+            float fanMoveX = dir.x;
+            float fanMoveZ = dir.y;
 
             Vector3 camForward = Camera.main.transform.forward;
             Vector3 camRight = Camera.main.transform.right;
@@ -119,12 +124,18 @@ public class Shot : NetworkBehaviour
             //
             //joystickを離したかチェック
 
-            Vector2 dir = joystick.Direction;
+            //Vector2 dir = joystick.Direction;
+            Vector2 dir = Gamepad.current.rightStick.ReadValue();//右スティックを参照
+
 
             if (dir != Vector2.zero)//joystickを動かしている場合
             {
-                float moveX = joystick.Horizontal;
-                float moveZ = joystick.Vertical;
+                //float moveX = joystick.Horizontal;
+                //float moveZ = joystick.Vertical;
+
+                float moveX = dir.x;
+                float moveZ = dir.y;
+
                 Vector3 camForward = Camera.main.transform.forward;
                 Vector3 camRight = Camera.main.transform.right;
 
@@ -145,7 +156,7 @@ public class Shot : NetworkBehaviour
 
             }
 
-            if (dir == Vector2.zero && !isShotEnd&&0.4f<oldJoyStick.magnitude&&!shooting)//Gageが0より多い場合 
+            if (Gamepad.current.rightTrigger.wasPressedThisFrame && !isShotEnd&&!shooting)//Gageが0より多い場合 
             {
                 
                 animator.SetBool("isForwardShot", true);
@@ -154,11 +165,11 @@ public class Shot : NetworkBehaviour
                 
                 isShotEnd = true;
                 //isShot = true;
-                if (reCharge != null)//もし前のこるーちんが処理中の場合ストップする 
+                if (reCharge != null)//もし前のコルーチンが処理中の場合ストップする 
                 {
                     StopCoroutine(reCharge);
                 }
-                reCharge = StartCoroutine(ReChargeBullete());//新しくこるーちんの処理を開始する
+                reCharge = StartCoroutine(ReChargeBullete());//新しくコルーチンを開始する
 
                 RotateServerRpc(target);
                 switch (player)
@@ -339,6 +350,13 @@ public class Shot : NetworkBehaviour
     void IsShotCancelServerRpc() 
     {
         isShot= false;
+    }
+
+    public void FindFloatingJoyStick()
+    {
+        Debug.Log("Floatingスティックを参照");
+        joystick = FindObjectOfType<FloatingJoystick>();
+        //joystick.enabled = false;
     }
 
 

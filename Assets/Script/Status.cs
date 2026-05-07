@@ -82,34 +82,45 @@ public class Status : NetworkBehaviour
             if (IsServer)
             {
                 // ダメージの反映はサーバー
-                ApplyDamage(bullete.Damage);
+                ApplyDamage(bullete.Damage,bullete.OwnerID.Value);
+                // 弾を消す
+                other.GetComponent<NetworkObject>().Despawn();
             }
             else
             {
                 // サーバーにリクエストを送る
-                ApplyDamageServerRpc(bullete.Damage);
+                ApplyDamageServerRpc(bullete.Damage, bullete.OwnerID.Value);
             }
 
-            // 弾を消す
-            other.GetComponent<NetworkObject>().Despawn();
+            Debug.Log("弾をうったのは" + bullete.OwnerClientId);
+
+            ShowPlayerClientRpc(bullete.OwnerClientId);
+            
+
         }
+    }
+
+    [ClientRpc]
+    void ShowPlayerClientRpc(ulong id) 
+    {
+        Debug.Log("弾をうったのは" + id);
     }
 
     // サーバー側で HP を減らす
     [ServerRpc]
-    private void ApplyDamageServerRpc(float dmg)
+    private void ApplyDamageServerRpc(float dmg,ulong shooterID)
     {
-        ApplyDamage(dmg);
+        ApplyDamage(dmg,shooterID);
     }
 
-    private void ApplyDamage(float dmg)
+    private void ApplyDamage(float dmg,ulong shooterID)
     {
         HP.Value -= dmg;
 
         if (HP.Value <= 0)//死亡処理
         {
             HP.Value = 0;
-            Die();
+            Die(shooterID);
         }
 
         // 回復ループ開始
@@ -131,8 +142,9 @@ public class Status : NetworkBehaviour
     }
 
     // 死亡処理（サーバーのみ）
-    private void Die()
+    private void Die(ulong shooterID)
     {
+        Debug.Log("キルをしたのは" + shooterID);
         Debug.Log("敗北者ID"+OwnerClientId);
         BattleManager.instance.ResultServerRpc(OwnerClientId);
 
@@ -145,6 +157,8 @@ public class Status : NetworkBehaviour
         
 
         GameManager.instance.FinishServerRpc();
+
+        ScoreManager.instance.AddScoreServerRpc(shooterID);
 
         //NetworkObject.OwnerClientId
 

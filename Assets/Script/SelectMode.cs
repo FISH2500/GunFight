@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.TextCore.Text;
 using UnityEngine.SceneManagement;
 using Unity.Networking.Transport;
+using System.Collections.Generic;
 
 public class SelectMode : NetworkBehaviour
 {
@@ -16,6 +17,8 @@ public class SelectMode : NetworkBehaviour
 
     [SerializeField]
     GameObject shutdown;
+
+
 
     [SerializeField]
     GameObject HostorJoin;
@@ -31,7 +34,14 @@ public class SelectMode : NetworkBehaviour
     private bool isTrigger=false;
 
     CharSelect select;
+
+    public Dictionary<ulong,int> playerIndex=new Dictionary<ulong,int>();
     int gIndex;
+
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -61,8 +71,10 @@ public class SelectMode : NetworkBehaviour
         
         GameStart();
 
-        PlayerSpawnServerRpc(gIndex);
+        //SceneManager.LoadScene("BattleScene");
 
+        PlayerSpawnServerRpc(gIndex);
+        SetIndexServerRpc(gIndex);
     }
 
     public void Client()//クライアントを選択した場合
@@ -74,12 +86,26 @@ public class SelectMode : NetworkBehaviour
         
         GameStart();
 
+        //SceneManager.LoadScene("BattleScene");
+
     }
     public void OnLeaveButton()//切断した場合
     {
         NetworkManager.Singleton.Shutdown();
         ReturnMenu();
         SceneManager.LoadScene("SampleScene");
+    }
+    public void OnRetryButton()//再戦する場合 
+    {
+        Debug.Log("再戦");
+
+        //PlayerSpawnServerRpc();Playerのスポーン
+        NetworkManager.Singleton.SceneManager.LoadScene("BattleScene", LoadSceneMode.Single);
+        //Debug.Log("あなた"+NetworkManager.Singleton.SpawnManager
+    //.GetLocalPlayerObject());
+
+        //PlayerSpawnServerRpc(gIndex);
+
     }
 
     void GameStart() 
@@ -102,6 +128,7 @@ public class SelectMode : NetworkBehaviour
         {
             GameStart();
             PlayerSpawnServerRpc(gIndex);
+            SetIndexServerRpc(gIndex);
         }
 
         NetworkManager.OnClientConnectedCallback -= OnClientConnected;
@@ -119,6 +146,7 @@ public class SelectMode : NetworkBehaviour
     public void SetIndex(int index) 
     {
         gIndex = index;
+        
         HostorJoin.SetActive(true);
         SelectCharButton.SetActive(false);
         
@@ -136,6 +164,17 @@ public class SelectMode : NetworkBehaviour
         var playerObj = Instantiate(prefab);
 
         playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
+    }
+
+    //選択キャラの保存
+    [ServerRpc(RequireOwnership = false)]
+    void SetIndexServerRpc(int index, ServerRpcParams rpcParams = default)
+    {
+        ulong clientID = rpcParams.Receive.SenderClientId;
+
+        playerIndex[clientID] = index;
+
+        Debug.Log($"保存: {clientID} → {index}");
     }
 
 

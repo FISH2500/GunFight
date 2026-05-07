@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour
 {
@@ -21,10 +22,10 @@ public class GameManager : NetworkBehaviour
     GameObject leaveButtonObj;
 
     [SerializeField]
-    GameObject winner;
+    GameObject retryButton;
 
     [SerializeField]
-    GameObject loser;
+    SpawnSystem spawnSystem;
 
     bool hasStartButton;
     bool setStart;
@@ -71,7 +72,9 @@ public class GameManager : NetworkBehaviour
             Debug.Log("スタートボタンチェック...");
             SetJoyStick();
 
+            spawnSystem.PlayerDespawn();
 
+            NetworkManager.Singleton.SceneManager.LoadScene("BattleScene",LoadSceneMode.Single);
 
             if (IsHost)//ホスト側に表示されていたスタートボタンの非表示
             startButtonObj.SetActive(false);
@@ -99,6 +102,7 @@ public class GameManager : NetworkBehaviour
     public void FinishServerRpc() 
     {
         SetLeaveClientRpc();
+        retryButton.SetActive(true);
     }
 
 
@@ -107,5 +111,6 @@ public class GameManager : NetworkBehaviour
     private void SetLeaveClientRpc() 
     {
         leaveButtonObj.SetActive(true);
+        
     }
 }

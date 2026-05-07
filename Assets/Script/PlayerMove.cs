@@ -12,10 +12,19 @@ public class PlayerMove : NetworkBehaviour
     //[SerializeField] private Transform fanshape;
     private Quaternion targetRotation;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+
+
+    public override void OnNetworkSpawn()
     {
+        Debug.Log("ネットワークスポーン");
         joystick = FindObjectOfType<DynamicJoystick>();
         joystick.enabled = false;
+    }
+
+    void Start()
+    {
+        
+        
     }
 
     // Update is called once per frame
@@ -30,13 +39,16 @@ public class PlayerMove : NetworkBehaviour
     void Move()
     {
         
-        Vector2 dir = joystick.Direction;//攻撃用のjoystick
+        //Vector2 dir = joystick.Direction;//攻撃用のjoystick
         
         float rotationSpeed = 600f * Time.deltaTime; // スライムの回転速度
-        float moveX = joystick.Horizontal;
-        float moveZ = joystick.Vertical;
+        //float moveX = joystick.Horizontal;
+        //float moveZ = joystick.Vertical;
 
+        float moveX = Input.GetAxis("Horizontal");
+        float moveZ = Input.GetAxis("Vertical");
 
+        Vector2 dir = new Vector2(moveX, moveZ);
         //if (dir.magnitude<0.3f)
         //{
         //    return;
@@ -88,6 +100,14 @@ public class PlayerMove : NetworkBehaviour
         }
         if (!shot.isShot) transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed);
 
+    }
+
+    //ジョイスティックを参照する関数
+    public void FindJoyStick() 
+    {
+        Debug.Log("スティックを参照");
+        joystick = FindObjectOfType<DynamicJoystick>();
+        //joystick.enabled = false;
     }
 
 

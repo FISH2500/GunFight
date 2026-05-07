@@ -11,7 +11,7 @@ public class CameraMove : NetworkBehaviour
 
     private void Awake()
     {
-        
+
     }
 
     void Start()
@@ -32,7 +32,7 @@ public class CameraMove : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
         if (Player != null)
         {
             // ƒvƒŒƒCƒ„[‚ÌŒã‚ë•ûŒü‚Ö10—£‚·
