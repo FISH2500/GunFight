@@ -25,6 +25,9 @@ public class GameManager : NetworkBehaviour
     GameObject retryButton;
 
     [SerializeField]
+    GameObject spawnButton;
+
+    [SerializeField]
     SpawnSystem spawnSystem;
 
     bool hasStartButton;
@@ -103,6 +106,7 @@ public class GameManager : NetworkBehaviour
     {
         SetLeaveClientRpc();
         retryButton.SetActive(true);
+        spawnButton.SetActive(true);
     }
 
 

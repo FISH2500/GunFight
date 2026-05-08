@@ -24,6 +24,11 @@ public class Status : NetworkBehaviour
        NetworkVariableWritePermission.Server
    );
 
+    private NetworkVariable<bool> DieFlag = new NetworkVariable<bool>(default,
+   NetworkVariableReadPermission.Everyone,
+   NetworkVariableWritePermission.Server
+);
+
     private Coroutine Heal;
 
 
@@ -148,13 +153,10 @@ public class Status : NetworkBehaviour
         Debug.Log("îsñké“ID"+OwnerClientId);
         BattleManager.instance.ResultServerRpc(OwnerClientId);
 
-        // îjâÛÇÕÉTÅ[ÉoÅ[ä«óù
-        if (IsServer)
-        {
-            GetComponent<NetworkObject>().Despawn();
-        }
+        GetComponent<NetworkObject>().Despawn();
 
-        
+        //gameObject.SetActive(false);
+        //DieClientRpc();
 
         GameManager.instance.FinishServerRpc();
 
@@ -163,5 +165,12 @@ public class Status : NetworkBehaviour
         //NetworkObject.OwnerClientId
 
         
+    }
+
+
+    [ClientRpc]
+    private void DieClientRpc() 
+    {
+        gameObject.SetActive(false);
     }
 }

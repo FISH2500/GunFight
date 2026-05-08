@@ -104,23 +104,19 @@ public class SpawnSystem : NetworkBehaviour
     //リスポーン
     public void Respawn() 
     {
-
-        
-
         //現在残っているPlayerをすべてリセット
-        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)//Listに格納されているPlayerを参照
-        {
-            var playerObj = client.PlayerObject;//全Playerのオブジェクトを取得
-
-            if (playerObj != null)
-            {
-                playerObj.Despawn(); 
-            }
-        }
+        PlayerDespawn();
 
         NetworkManager.Singleton.SceneManager.LoadScene("BattleScene", LoadSceneMode.Single);
 
+    }
 
+    //全キャラクターをスポーン
+    public void PlayerAllRespawn() 
+    {
+        PlayerDespawn();
+
+        PlayerSpawn();
     }
 
 }

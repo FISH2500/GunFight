@@ -181,7 +181,7 @@ MonoBehaviour:
   Time: 0.5
   power: 20
   uppower: 0
-  Damage: 780
+  Damage: 450
   Owner: {fileID: 0}
   OwnerID:
     m_InternalValue: 0
