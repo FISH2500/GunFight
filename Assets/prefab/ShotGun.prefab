@@ -752,7 +752,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   joystick: {fileID: 0}
-  speed: 3
+  speed: 4
   animator: {fileID: 8072001874305338012}
   shot: {fileID: 8466690173527451962}
 --- !u!54 &2120281056067110861

@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class BattleSceneManager : MonoBehaviour
+public class BattlePlayerSet : NetworkBehaviour
 {
     void Start()
     {
@@ -14,8 +14,10 @@ public class BattleSceneManager : MonoBehaviour
        //// Joystick stick = FindObjectOfType<Joystick>();
 
        // // 自分のPlayer取得
-       // NetworkObject playerObj = NetworkManager.Singleton.SpawnManager
-       //     .GetLocalPlayerObject();
+       NetworkObject playerObj = NetworkManager.Singleton.SpawnManager
+            .GetLocalPlayerObject();
+
+        playerObj.GetComponent<Status>().BattleStartServerRpc();//Playerをバトルモードにする
 
        // if (playerObj == null)
        // {

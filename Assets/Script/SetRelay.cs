@@ -16,6 +16,13 @@ public class SetRelay : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI joinCodeText;
 
+    [SerializeField]
+    SetErrorPanel errorPanel;
+
+    [SerializeField]
+    GameObject joinButton;
+    
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private async void Start()
     {
@@ -25,7 +32,7 @@ public class SetRelay : MonoBehaviour
         {
             Debug.Log("Sigined in" + AuthenticationService.Instance.PlayerId);
         };
-
+        if(!AuthenticationService.Instance.IsSignedIn)
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
     }
 
@@ -62,19 +69,27 @@ public class SetRelay : MonoBehaviour
 
     public async void  JoinRelay(string joinCode) 
     {
+        joinButton.SetActive(false);
+
         try
         {
+            
             JoinAllocation joinAllocation= await RelayService.Instance.JoinAllocationAsync(joinCode);
 
             RelayServerData relayServerData = new RelayServerData(joinAllocation, "dtls");//dtlsÇÕà√çÜâª ;
 
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
+
             NetworkManager.Singleton.StartClient();
 
             selectMode.Client();
 
-        }catch(RelayServiceException e) 
+            
+
+        }
+        catch(RelayServiceException e) 
         {
+            errorPanel.ShowErroPanale("not find room",joinButton);
             Debug.Log(e);
         }
     }

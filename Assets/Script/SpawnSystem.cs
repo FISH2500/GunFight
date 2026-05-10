@@ -24,8 +24,6 @@ public class SpawnSystem : NetworkBehaviour
     [SerializeField]
     GameObject[] Character;
 
-    SelectMode selectMode;
-
     int clientId;
 
     private void Awake()
@@ -36,19 +34,8 @@ public class SpawnSystem : NetworkBehaviour
 
     private void Start()
     {
-        GameObject selectObj = GameObject.Find("CharSelectManager");
-
-        selectMode=selectObj.GetComponent<SelectMode>();
-
-        if (selectMode == null) 
-        {
-            Debug.Log("SelectModeスクリプトが見つからない");
-        }
-
-
-
+        if (!IsServer) return;
         PlayerSpawn();
-
     }
 
     public override void OnNetworkSpawn()
@@ -58,15 +45,17 @@ public class SpawnSystem : NetworkBehaviour
         Debug.Log("ID:" + clientId);
 
 
-
+        
 
     }
 
-    public void SetSpawnPosition(GameObject spawnPlayer,ulong clientID) //スポーンしたオブジェクトと何番目にスポーンしたPlayerであるか確認するspawnIDを引数とする
+    public void SetSpawnPosition(GameObject spawnPlayer,int spawnIndex) //スポーンしたオブジェクトと何番目にスポーンしたPlayerであるか確認するspawnIDを引数とする
     {
+        
+
         //clientIDをもとに回転,場所をきめる
-        spawnPlayer.transform.rotation = spawn.spawnRot[(int)clientID];
-        spawnPlayer.transform.position = spawn.spawnPos[(int)clientID].position;
+        spawnPlayer.transform.rotation = spawn.spawnRot[spawnIndex];
+        spawnPlayer.transform.position = spawn.spawnPos[spawnIndex].position;
     }
 
     public void PlayerDespawn() 
@@ -85,18 +74,21 @@ public class SpawnSystem : NetworkBehaviour
 
     public void PlayerSpawn() 
     {
+        int spawnIndex = 0;
         //Playerのスポーン
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
             ulong clientID = client.ClientId;
 
-            int index = selectMode.playerIndex[clientID];
+            int index = PlayerDataManager.instance.playerSelectIndex[clientID];
 
             GameObject prefab = Character[index];
 
-            SetSpawnPosition(prefab, clientID);
-
             var playerObj = Instantiate(prefab);
+
+            SetSpawnPosition(playerObj, spawnIndex);
+
+            spawnIndex++;
 
             playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
         }

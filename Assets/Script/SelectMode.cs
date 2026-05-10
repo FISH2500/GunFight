@@ -29,18 +29,17 @@ public class SelectMode : NetworkBehaviour
     [SerializeField]
     SpawnSystem spawnSystem;
 
-    
-
     private bool isTrigger=false;
 
     CharSelect select;
 
-    public Dictionary<ulong,int> playerIndex=new Dictionary<ulong,int>();
     int gIndex;
+
+    
 
     private void Awake()
     {
-        DontDestroyOnLoad(gameObject);
+
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -74,7 +73,7 @@ public class SelectMode : NetworkBehaviour
         //SceneManager.LoadScene("BattleScene");
 
         PlayerSpawnServerRpc(gIndex);
-        SetIndexServerRpc(gIndex);
+        PlayerDataManager.instance.SetIndexServerRpc(gIndex);
     }
 
     public void Client()//クライアントを選択した場合
@@ -92,7 +91,8 @@ public class SelectMode : NetworkBehaviour
     public void OnLeaveButton()//切断した場合
     {
         NetworkManager.Singleton.Shutdown();
-        ReturnMenu();
+        //ReturnMenu();
+        //NetworkManager.Singleton.SceneManager.LoadScene("SampleScene", LoadSceneMode.Single);
         SceneManager.LoadScene("SampleScene");
     }
     public void OnRetryButton()//再戦する場合 
@@ -128,7 +128,7 @@ public class SelectMode : NetworkBehaviour
         {
             GameStart();
             PlayerSpawnServerRpc(gIndex);
-            SetIndexServerRpc(gIndex);
+            PlayerDataManager.instance.SetIndexServerRpc(gIndex);
         }
 
         NetworkManager.OnClientConnectedCallback -= OnClientConnected;
@@ -157,25 +157,21 @@ public class SelectMode : NetworkBehaviour
     {
         ulong clientID = rpcParams.Receive.SenderClientId;
 
+
+        PlayerDataManager.instance.PlayerNumRegistration(clientID);
+
         GameObject prefab = select.Character[index];
 
-        spawnSystem.SetSpawnPosition(prefab, clientID);
+        
 
         var playerObj = Instantiate(prefab);
+
+        spawnSystem.SetSpawnPosition(playerObj, PlayerDataManager.instance.GetPlayerNum(clientID));
 
         playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
     }
 
-    //選択キャラの保存
-    [ServerRpc(RequireOwnership = false)]
-    void SetIndexServerRpc(int index, ServerRpcParams rpcParams = default)
-    {
-        ulong clientID = rpcParams.Receive.SenderClientId;
 
-        playerIndex[clientID] = index;
-
-        Debug.Log($"保存: {clientID} → {index}");
-    }
 
 
 }

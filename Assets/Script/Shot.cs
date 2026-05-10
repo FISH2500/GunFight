@@ -9,7 +9,9 @@ public class Shot : NetworkBehaviour
     [SerializeField] private FloatingJoystick joystick;
     [SerializeField] private GameObject[] bullete;
     [SerializeField] private Transform firepoint;
+    [SerializeField] private Transform aimpoint;
     [SerializeField] private Transform collidershape;
+    [SerializeField] private AimLine aimLine;
     [SerializeField] private float addRotateValue;
     [SerializeField] private float power;
     [SerializeField] private float[] bulleteCount;
@@ -38,6 +40,7 @@ public class Shot : NetworkBehaviour
     private bool isReload = false;
     private bool shooting = false;
     private Vector2 oldJoyStick;
+    float distance;
 
     void Start()
     {
@@ -79,42 +82,66 @@ public class Shot : NetworkBehaviour
         if (dir != Vector2.zero&& dir.magnitude >= 0.4f)//射撃ボタンを動かしている時,スティックを伸ばしていない時
         {
             
-            collidershape.gameObject.SetActive(true);
+            //collidershape.gameObject.SetActive(true);
             //float fanMoveX = joystick.Horizontal;
             //float fanMoveZ = joystick.Vertical;
 
             float fanMoveX = dir.x;
             float fanMoveZ = dir.y;
 
-            Vector3 camForward = Camera.main.transform.forward;
-            Vector3 camRight = Camera.main.transform.right;
+            //Vector3 camForward = Camera.main.transform.forward;
+            //Vector3 camRight = Camera.main.transform.right;
 
-            // 上方向の成分を消す（地面方向だけ使う）
-            camForward.y = 0;
-            camRight.y = 0;
+            //// 上方向の成分を消す（地面方向だけ使う）
+            //camForward.y = 0;
+            //camRight.y = 0;
 
-            camForward.Normalize();
-            camRight.Normalize();
+            //camForward.Normalize();
+            //camRight.Normalize();
 
 
             //fanShapetarget = new Vector3(fanMoveX, 0, fanMoveZ).normalized;
-            fanShapetarget = camForward*fanMoveZ+camRight*fanMoveX;
+            //fanShapetarget = camForward*fanMoveZ+camRight*fanMoveX;
 
-            Quaternion baseRotation = Quaternion.LookRotation(fanShapetarget);
+            fanShapetarget =
+    new Vector3(
+        fanMoveX,
+        0,
+        fanMoveZ
+    ).normalized;
 
-            collidershape.transform.rotation = baseRotation * Quaternion.Euler(0, addRotateValue, 0);
+
+            fanShapetarget.Normalize();
+            Vector3 endPos =
+                GetAimPoint(
+                aimpoint.position,
+                fanShapetarget,
+                10.0f
+                );
+
+            endPos.y = aimpoint.position.y;
+
+            aimLine.ShowHandGunAimLine(
+                aimpoint.position,
+                endPos
+            );
+            //aimLine.ShowHandGunAimLine(aimpoint.position, GetAimPoint(aimpoint.position, fanShapetarget,10.0f));
+
+            //Quaternion baseRotation = Quaternion.LookRotation(fanShapetarget);
+
+            //collidershape.transform.rotation = baseRotation * Quaternion.Euler(0, addRotateValue, 0);
         }
         else 
         {
-            
-            collidershape.gameObject.SetActive(false);
+            aimLine.HideHandGunAimLine();
+            //collidershape.gameObject.SetActive(false);
 
         }
         bulleteGage_Orange.fillAmount = Gage;
 
 
 
-        ShotCheck();
+        ShotCheck();//射撃をしているかチェック
     }
 
     void ShotCheck() 
@@ -156,14 +183,14 @@ public class Shot : NetworkBehaviour
 
             }
 
-            if (Gamepad.current.rightTrigger.wasPressedThisFrame && !isShotEnd&&!shooting)//Gageが0より多い場合 
+            if (Gamepad.current.rightTrigger.wasPressedThisFrame &&!shooting)//ZRが押された時
             {
                 
                 animator.SetBool("isForwardShot", true);
                 isReload = false;
                 shooting = true;
                 
-                isShotEnd = true;
+                //isShotEnd = true;
                 //isShot = true;
                 if (reCharge != null)//もし前のコルーチンが処理中の場合ストップする 
                 {
@@ -175,13 +202,12 @@ public class Shot : NetworkBehaviour
                 switch (player)
                 {
                     case PlayerType.ShotGun:
+                        distance = 5.0f;
                         Shot_ShotGun();
-                        //Debug.Log("方向:"+target);
-                        //    rb.AddForce(new Vector3(target.x + (i * 0.5f - 0.5f)/2, target.y,target.z + (i * 0.5f - 0.5f)/2) * power, ForceMode.Impulse);
                         break;
 
                     case PlayerType.Assault:
-                        
+                        distance = 10.0f;//射程距離
                         Shot_Assault();
                         break;
 
@@ -239,14 +265,15 @@ public class Shot : NetworkBehaviour
         for (int i = 0; i < shots; i++)
         {
 
-            Assault_BulleteServerRpc(i, sideOffset, OwnerClientId);
+            AssaultBulleteServerRpc(i, sideOffset, OwnerClientId);
 
             yield return new WaitForSeconds(interval); // ← 間隔を空ける
         }
+
+        //---打ち終わり-----
         shooting = false;
         isShotEnd = true;
         IsShotCancelServerRpc();
-        //isShot = false;
     }
 
     void Shot_Bomu() 
@@ -274,7 +301,7 @@ public class Shot : NetworkBehaviour
 
             Vector3 up = transform.up;
 
-            rb.AddForce((forward * deleteBullete.power*(oldJoyStick.magnitude*10) + up*deleteBullete.uppower), ForceMode.Impulse);
+            //rb.AddForce((forward * deleteBullete.power*(oldJoyStick.magnitude*10) + up*deleteBullete.uppower), ForceMode.Impulse);
         }
 
 
@@ -314,14 +341,20 @@ public class Shot : NetworkBehaviour
             float offset = (i - (bulleteCount[0] - 1) / 2f) * 0.2f;
             Vector3 spreadDir = (h_target + right * offset).normalized;
 
-            rb.AddForce(spreadDir * deleteBullete.power, ForceMode.Impulse);
+            //rb.AddForce(spreadDir * deleteBullete.power, ForceMode.Impulse);
 
-            Debug.Log("speedDir" + spreadDir + "power" + deleteBullete.power);
+            //Debug.Log("speedDir" + spreadDir + "power" + deleteBullete.power);
+
+            Vector3 targetPos = GetAimPoint(firestart, spreadDir, distance);
+
+            deleteBullete.SetTargetPos(targetPos);
+
+
         }
     }
 
     [ServerRpc]
-    void Assault_BulleteServerRpc(int i, float sideOffset,ulong shooterID)
+    void AssaultBulleteServerRpc(int i, float sideOffset,ulong shooterID)
     {
         isShot = true;
         Vector3 firestart = firepoint.position;
@@ -342,7 +375,12 @@ public class Shot : NetworkBehaviour
             deleteBullete.OwnerID.Value = shooterID;
             netObj.Spawn();
             Vector3 forward = transform.forward;
-            rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
+
+            Vector3 target = GetAimPoint(firestart + BulleteSpawn, forward, distance);
+
+            deleteBullete.SetTargetPos(target);
+            
+            //rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
         }
     }
 
@@ -357,6 +395,25 @@ public class Shot : NetworkBehaviour
         Debug.Log("Floatingスティックを参照");
         joystick = FindObjectOfType<FloatingJoystick>();
         //joystick.enabled = false;
+    }
+
+    /// <summary>
+    /// 弾の到達点を求める
+    /// </summary>
+    /// <param name="startPos">射撃しはじめの地点</param>
+    /// <param name="dir">方向</param>
+    /// <param name="maxDistance">射程距離</param>
+    /// <returns>弾の最終到達地点</returns>
+    Vector3 GetAimPoint(Vector3 startPos,Vector3 dir,float maxDistance) 
+    {
+        RaycastHit hit;
+
+        if (Physics.Raycast(startPos, dir, out hit, maxDistance))//壁に当たった場合その地点を返す
+        {
+            if(hit.collider.CompareTag("Wall")) return hit.point;
+        }
+
+        return startPos + dir * maxDistance;
     }
 
 

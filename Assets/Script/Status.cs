@@ -18,40 +18,80 @@ public class Status : NetworkBehaviour
     [SerializeField] float HealTime;
     [SerializeField] GameObject EnemyCanva;
 
+
+    private bool die=false;
+
     private NetworkVariable<float> HP = new NetworkVariable<float>(
        4000f,
        NetworkVariableReadPermission.Everyone,
        NetworkVariableWritePermission.Server
    );
 
-    private NetworkVariable<bool> DieFlag = new NetworkVariable<bool>(default,
+    public NetworkVariable<bool> invincible = new NetworkVariable<bool>(default,
    NetworkVariableReadPermission.Everyone,
    NetworkVariableWritePermission.Server
-);
+);//無敵フラグ
 
     private Coroutine Heal;
 
 
     private void Start()
     {
-        if (IsLocalPlayer) 
+        GameObject standPlayerSetObj = GameObject.Find("StandPlayerSet");
+
+        if (standPlayerSetObj != null)
         {
-            playerHpBar.gameObject.SetActive( true );
-            enemyHpBar.gameObject.SetActive( false );
+            StandPlayerSet standPlayerSet = standPlayerSetObj.GetComponent<StandPlayerSet>();
+
+            standPlayerSet.Connect();
+
         }
-        else 
+    }
+
+    public override void OnNetworkSpawn()
+    {
+
+
+
+        if (IsLocalPlayer)
+        {
+            playerHpBar.gameObject.SetActive(true);
+            enemyHpBar.gameObject.SetActive(false);
+        }
+        else
         {
             playerHpBar.gameObject.SetActive(false);
             enemyHpBar.gameObject.SetActive(true);
         }
-    }
-    public override void OnNetworkSpawn()
-    {
+
         // 変更があったら HPBar を更新
         HP.OnValueChanged += OnHPChanged;
 
         // スポーン時にも UI を更新
         OnHPChanged(HP.Value, HP.Value);
+    }
+
+
+    /// <summary>
+    /// 待機開始
+    /// </summary>
+    [ServerRpc]
+    public void StandStartServerRpc()
+    {
+
+        invincible.Value = true;//無敵解除
+        Debug.Log("スタンドモード" + invincible.Value);
+    }
+
+    /// <summary>
+    /// バトル開始
+    /// </summary>
+    [ServerRpc]
+    public void BattleStartServerRpc() 
+    {
+        
+        invincible.Value = false;//無敵解除
+        Debug.Log("ばとるモード" + invincible.Value);
     }
 
     private void OnHPChanged(float oldValue, float newValue)
@@ -84,46 +124,30 @@ public class Status : NetworkBehaviour
 
         if (other.CompareTag("Bullete") &&OwnerClientId!=bullete.OwnerID.Value)//弾を打った人物じゃない場合
         {
-            if (IsServer)
+            if (!IsServer) return;
             {
+                if (!invincible.Value)//無敵じゃなければ
                 // ダメージの反映はサーバー
                 ApplyDamage(bullete.Damage,bullete.OwnerID.Value);
                 // 弾を消す
                 other.GetComponent<NetworkObject>().Despawn();
             }
-            else
-            {
-                // サーバーにリクエストを送る
-                ApplyDamageServerRpc(bullete.Damage, bullete.OwnerID.Value);
-            }
 
-            Debug.Log("弾をうったのは" + bullete.OwnerClientId);
-
-            ShowPlayerClientRpc(bullete.OwnerClientId);
             
 
         }
     }
 
-    [ClientRpc]
-    void ShowPlayerClientRpc(ulong id) 
-    {
-        Debug.Log("弾をうったのは" + id);
-    }
-
-    // サーバー側で HP を減らす
-    [ServerRpc]
-    private void ApplyDamageServerRpc(float dmg,ulong shooterID)
-    {
-        ApplyDamage(dmg,shooterID);
-    }
-
     private void ApplyDamage(float dmg,ulong shooterID)
     {
+
+        if (die) return;
+
         HP.Value -= dmg;
 
         if (HP.Value <= 0)//死亡処理
         {
+            die = true;
             HP.Value = 0;
             Die(shooterID);
         }
@@ -151,26 +175,18 @@ public class Status : NetworkBehaviour
     {
         Debug.Log("キルをしたのは" + shooterID);
         Debug.Log("敗北者ID"+OwnerClientId);
-        BattleManager.instance.ResultServerRpc(OwnerClientId);
+        //BattleManager.instance.ResultServerRpc(OwnerClientId);//勝敗の結果
 
         GetComponent<NetworkObject>().Despawn();
 
-        //gameObject.SetActive(false);
-        //DieClientRpc();
-
-        GameManager.instance.FinishServerRpc();
+        GameManager.instance.Finish();//次の行動用ボタンの表示
 
         ScoreManager.instance.AddScoreServerRpc(shooterID);
+        var playerObj = NetworkManager.Singleton.ConnectedClients[shooterID].PlayerObject;//キルしたPlayerを取得
 
-        //NetworkObject.OwnerClientId
+        playerObj.GetComponent<Status>().invincible.Value = true;
+
 
         
-    }
-
-
-    [ClientRpc]
-    private void DieClientRpc() 
-    {
-        gameObject.SetActive(false);
     }
 }

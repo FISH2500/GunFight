@@ -165,7 +165,7 @@ public class Enemy : MonoBehaviour
 
                 Vector3 spreadDir = (dir.normalized + right * offset).normalized;
 
-                rb.AddForce(spreadDir * deleteBullete.power, ForceMode.Impulse);
+                //rb.AddForce(spreadDir * deleteBullete.power, ForceMode.Impulse);
             }
         }
 
@@ -246,7 +246,7 @@ public class Enemy : MonoBehaviour
                 DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
                 deleteBullete.Owner = gameObject;
                 Vector3 forward = transform.forward;
-                rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
+                //rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
             }
 
             yield return new WaitForSeconds(shotinterval); // Å© ä‘äuÇãÛÇØÇÈ

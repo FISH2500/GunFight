@@ -10,6 +10,15 @@ public class SetModelAnimation : MonoBehaviour
     Button enterButton;//決定ボタン
 
     [SerializeField]
+    Button backButton;//選択キャラのパネルに戻るボタン
+
+    [SerializeField]
+    GameObject hostClientPanel;//ホスト、クライアントの選択パネル
+
+    [SerializeField]
+    GameObject selectCharPanel;//選択キャラクターのパネル
+
+    [SerializeField]
     GameObject setCharacter;
 
     [SerializeField]
@@ -27,9 +36,11 @@ public class SetModelAnimation : MonoBehaviour
             btn.onClick.AddListener(()=>SelectModel(btn));
         }
 
-        enterButton.onClick.AddListener(EnterChar);
+        enterButton.onClick.AddListener(EnterChar);//決定ボタンの登録
 
         enterButton.gameObject.SetActive(false);
+
+        backButton.onClick.AddListener(PushBackButton);
     }
 
     // Update is called once per frame
@@ -67,5 +78,16 @@ public class SetModelAnimation : MonoBehaviour
     {
         selectMode.SetIndex(id);
         Destroy(setCharacter);
+    }
+    /// <summary>
+    /// 選択パネルに戻るボタンが押された
+    /// </summary>
+
+    void PushBackButton() 
+    {
+        hostClientPanel.SetActive(false);
+        selectCharPanel.SetActive(true);
+        enterButton.gameObject.SetActive(false);
+        id = -1;//選択キャラの初期化
     }
 }

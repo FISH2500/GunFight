@@ -178,11 +178,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  Time: 0.5
-  power: 15
+  speed: 10
   uppower: 0
   Damage: 600
   Owner: {fileID: 0}
+  OwnerID:
+    m_InternalValue: 0
 --- !u!114 &6905751327794679314
 MonoBehaviour:
   m_ObjectHideFlags: 0

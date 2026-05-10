@@ -41,6 +41,8 @@ public class GameManager : NetworkBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        
+
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
     }
 
@@ -63,16 +65,11 @@ public class GameManager : NetworkBehaviour
             startButtonObj.SetActive(true);//スタートボタンを有効
         }
     }
-    void SetStartButton() 
-    {
-
-    }
 
     void StartCheck() 
     {
         if (isStart.Value&&!setStart)//スタートボタンが押された場合 
         {
-            Debug.Log("スタートボタンチェック...");
             SetJoyStick();
 
             spawnSystem.PlayerDespawn();
@@ -101,8 +98,7 @@ public class GameManager : NetworkBehaviour
         isStart.Value = true;
     }
 
-    [ServerRpc]
-    public void FinishServerRpc() 
+    public void Finish() 
     {
         SetLeaveClientRpc();
         retryButton.SetActive(true);
@@ -116,5 +112,14 @@ public class GameManager : NetworkBehaviour
     {
         leaveButtonObj.SetActive(true);
         
+    }
+
+    private void OnDestroy()
+    {
+        hasStartButton = false;
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+        }
     }
 }

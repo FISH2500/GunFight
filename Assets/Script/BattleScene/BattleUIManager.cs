@@ -19,7 +19,7 @@ public class BattleUIManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
@@ -29,10 +29,10 @@ public class BattleUIManager : MonoBehaviour
     }
 
     //ScoreボードのNameを出力
-    public void OutPutScoreName(ulong playerID,string name) 
+    public void OutPutScoreName(int playerID,string name) 
     {
 
-        nameText[(int)playerID].text = name;
+        nameText[playerID].text = name;
     }
 
     public void OutPutScoreText(int playerID,int score) 
