@@ -7481,6 +7481,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lineRenderer: {fileID: 7116337990015912742}
+  material: {fileID: 2100000, guid: 5f10f4671732ece4aad15b2923289339, type: 2}
 --- !u!114 &6347735326752225446
 MonoBehaviour:
   m_ObjectHideFlags: 0

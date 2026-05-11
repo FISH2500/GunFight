@@ -26,6 +26,8 @@ public class SpawnSystem : NetworkBehaviour
 
     int clientId;
 
+    public int SpawnIndex;//何番目にスポーンしたのかチェックする
+
     private void Awake()
     {
         //接続したPlayerのオブジェクトを取得
@@ -48,8 +50,12 @@ public class SpawnSystem : NetworkBehaviour
         
 
     }
-
-    public void SetSpawnPosition(GameObject spawnPlayer,int spawnIndex) //スポーンしたオブジェクトと何番目にスポーンしたPlayerであるか確認するspawnIDを引数とする
+    /// <summary>
+    /// スポーン位置を決める関数
+    /// </summary>
+    /// <param name="spawnPlayer">スポーンするキャラ</param>
+    /// <param name="spawnIndex">何番目にスポーンしたPlayerであるか</param>
+    public void SetSpawnPosition(GameObject spawnPlayer,int spawnIndex) 
     {
         
 
@@ -110,5 +116,33 @@ public class SpawnSystem : NetworkBehaviour
 
         PlayerSpawn();
     }
+
+    /// <summary>
+    /// SpawnIndexを初期化する関数
+    /// </summary>
+    public void InitSpawnIndex()
+    {
+        SpawnIndex=0;
+    }
+
+
+    /// <summary>
+    /// スポーンする場合にSpawnIndexを増やす関数
+    /// </summary>
+    public void AddSpawnIndex() 
+    {
+        SpawnIndex++;
+    }
+
+    /// <summary>
+    /// 現在のプレイヤーが何番目なのかを確認する関数
+    /// </summary>
+    /// <returns>SpawnIndex</returns>
+    public int GetSpawnIndex() 
+    {
+        return SpawnIndex;
+    }
+
+    
 
 }

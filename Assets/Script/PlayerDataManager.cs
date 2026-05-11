@@ -9,13 +9,12 @@ public class PlayerDataManager : NetworkBehaviour
 
     public Dictionary<ulong, int> playerSelectIndex = new Dictionary<ulong, int>();
 
-    public Dictionary<ulong ,int> playerIndex = new Dictionary<ulong ,int>();//Playerの接続番号を確かめる
+    //public Dictionary<ulong ,int> playerIndex = new Dictionary<ulong ,int>();//Playerの接続番号を確かめる
 
-    int playerCount = 0;
+    public int playerCount = 0;
 
     private void Awake()
     {
-        playerCount = 0;
         //すでにオブジェクトが存在している場合削除
         if (instance != null) 
         {
@@ -58,24 +57,24 @@ public class PlayerDataManager : NetworkBehaviour
         playerCount = 0;
     }
 
-    //Player番号の登録
-    public void PlayerNumRegistration(ulong clientID) 
-    {
-        //if (!playerIndex.ContainsKey(clientID))
-        {
-            playerIndex[clientID] = playerCount%2;
-        }
-        Debug.Log("clientID" + clientID + "index" + playerIndex.Count);
-        playerCount++;
-    }
+    ////Player番号の登録
+    //public void PlayerNumRegistration(ulong clientID) 
+    //{
+    //    //if (!playerIndex.ContainsKey(clientID))
+    //    {
+    //        //playerIndex[clientID] = playerCount%2;
+    //    }
+    //    Debug.Log("clientID" + clientID + "index" + playerIndex.Count);
+    //    playerCount++;
+    //}
 
-    public int GetPlayerNum(ulong clientID) 
-    {
-        if(playerIndex.TryGetValue(clientID,out int index))//そのclientIDが登録されていない場合
-        {
-            return index;//クライアントIDに基づいて番号をチェック
-        }
-        Debug.LogWarning("未登録のclientID:"+ clientID);
-        return -1;
-    }
+    //public int GetPlayerNum(ulong clientID) 
+    //{
+    //    if(playerIndex.TryGetValue(clientID,out int index))//そのclientIDが登録されていない場合
+    //    {
+    //        return index;//クライアントIDに基づいて番号をチェック
+    //    }
+    //    Debug.LogWarning("未登録のclientID:"+ clientID);
+    //    return -1;
+    //}
 }

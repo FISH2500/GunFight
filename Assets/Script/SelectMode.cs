@@ -45,6 +45,7 @@ public class SelectMode : NetworkBehaviour
     void Start()
     {
         select=gameObject.GetComponent<CharSelect>();
+        PlayerDataManager.instance.PlayerCountReset();
     }
 
     // Update is called once per frame
@@ -128,7 +129,7 @@ public class SelectMode : NetworkBehaviour
         {
             GameStart();
             PlayerSpawnServerRpc(gIndex);
-            PlayerDataManager.instance.SetIndexServerRpc(gIndex);
+            //PlayerDataManager.instance.SetIndexServerRpc(gIndex);
         }
 
         NetworkManager.OnClientConnectedCallback -= OnClientConnected;
@@ -158,7 +159,7 @@ public class SelectMode : NetworkBehaviour
         ulong clientID = rpcParams.Receive.SenderClientId;
 
 
-        PlayerDataManager.instance.PlayerNumRegistration(clientID);
+        //PlayerDataManager.instance.PlayerNumRegistration(clientID);
 
         GameObject prefab = select.Character[index];
 
@@ -166,7 +167,9 @@ public class SelectMode : NetworkBehaviour
 
         var playerObj = Instantiate(prefab);
 
-        spawnSystem.SetSpawnPosition(playerObj, PlayerDataManager.instance.GetPlayerNum(clientID));
+        spawnSystem.SetSpawnPosition(playerObj, PlayerDataManager.instance.playerCount);
+
+        PlayerDataManager.instance.playerCount++;
 
         playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
     }

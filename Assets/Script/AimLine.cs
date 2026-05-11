@@ -4,6 +4,9 @@ public class AimLine : MonoBehaviour
 {
     [SerializeField]
     LineRenderer lineRenderer;
+
+    [SerializeField]
+    Material material;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -25,6 +28,8 @@ public class AimLine : MonoBehaviour
     public void ShowHandGunAimLine(Vector3 startPos,Vector3 endPos) 
     {
         lineRenderer.enabled = true;
+
+        lineRenderer.material = material;
 
         lineRenderer.positionCount = 2;
 

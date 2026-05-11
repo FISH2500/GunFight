@@ -410,7 +410,12 @@ public class Shot : NetworkBehaviour
 
         if (Physics.Raycast(startPos, dir, out hit, maxDistance))//壁に当たった場合その地点を返す
         {
-            if(hit.collider.CompareTag("Wall")) return hit.point;
+            if (hit.collider.CompareTag("Wall")) 
+            {
+                Debug.Log("壁にrayHit" + hit.point);
+                return hit.point;
+            } 
+            
         }
 
         return startPos + dir * maxDistance;

@@ -60,6 +60,6 @@ public class SetName : NetworkBehaviour
     {
         gameObject.GetComponent<TextMeshProUGUI>().text = name;
         if(BattleUIManager.instance!=null)
-        BattleUIManager.instance.OutPutScoreName(PlayerDataManager.instance.GetPlayerNum(OwnerClientId), name);
+        BattleUIManager.instance.OutPutScoreName(PlayerDataManager.instance.playerCount, name);
     }
 }
