@@ -86,7 +86,7 @@ public class SpawnSystem : NetworkBehaviour
         {
             ulong clientID = client.ClientId;
 
-            int index = PlayerDataManager.instance.playerSelectIndex[clientID];
+            int index = PlayerDataManager.instance.playerSelectIndex[spawnIndex];
 
             GameObject prefab = Character[index];
 
@@ -94,9 +94,14 @@ public class SpawnSystem : NetworkBehaviour
 
             SetSpawnPosition(playerObj, spawnIndex);
 
+            playerObj.GetComponent<PlayerData>().playerID.Value = spawnIndex;
+
             spawnIndex++;
 
             playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
+
+
+            
         }
     }
     //ÉäÉXÉ|Å[Éì

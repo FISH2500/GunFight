@@ -7,7 +7,7 @@ public class PlayerDataManager : NetworkBehaviour
 
     public static PlayerDataManager instance { private set; get; }
 
-    public Dictionary<ulong, int> playerSelectIndex = new Dictionary<ulong, int>();
+    public int[] playerSelectIndex = new int[2];
 
     //public Dictionary<ulong ,int> playerIndex = new Dictionary<ulong ,int>();//Playerの接続番号を確かめる
 
@@ -46,9 +46,15 @@ public class PlayerDataManager : NetworkBehaviour
     {
         ulong clientID = rpcParams.Receive.SenderClientId;
 
-        playerSelectIndex[clientID] = index;
+        NetworkObject playerObj = NetworkManager.Singleton.SpawnManager
+    .GetLocalPlayerObject();
 
-        Debug.Log($"保存: {clientID} → {index}");
+        playerSelectIndex[playerCount] = index;
+
+        Debug.Log($"保存: {playerObj.GetComponent<PlayerData>().playerID.Value} → {index}");
+
+        playerCount++;
+
     }
 
     //Playerカウントのリセット

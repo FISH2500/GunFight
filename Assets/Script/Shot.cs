@@ -3,6 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using static UnityEngine.GraphicsBuffer;
 
 public class Shot : NetworkBehaviour
 {
@@ -12,6 +13,7 @@ public class Shot : NetworkBehaviour
     [SerializeField] private Transform aimpoint;
     [SerializeField] private Transform collidershape;
     [SerializeField] private AimLine aimLine;
+    [SerializeField] private ShotGunAim shotgunAim;
     [SerializeField] private float addRotateValue;
     [SerializeField] private float power;
     [SerializeField] private float[] bulleteCount;
@@ -27,7 +29,7 @@ public class Shot : NetworkBehaviour
     private Vector3 fanShapetarget;
     public bool isShot = false;
 
-    private enum PlayerType  { ShotGun, Assault ,BomuThrow};
+    private enum PlayerType  { ShotGun, HandGun ,BomuThrow};
 
     [SerializeField] PlayerType player = new PlayerType();
 
@@ -73,11 +75,11 @@ public class Shot : NetworkBehaviour
         //Vector2 dir = joystick.Direction;
         Vector2 dir = Gamepad.current.rightStick.ReadValue();//右スティックを参照
 
-        if (dir.magnitude>0.1f&&dir.magnitude <= 0.5f)//射撃をキャンセルする条件 スティックが0.5fより小さい場合
-        {
+        //if (dir.magnitude>0.1f&&dir.magnitude <= 0.5f)//射撃をキャンセルする条件 スティックが0.5fより小さい場合
+        //{
             
-            oldJoyStick = dir;
-        }
+        //    oldJoyStick = dir;
+        //}
 
         if (dir != Vector2.zero&& dir.magnitude >= 0.4f)//射撃ボタンを動かしている時,スティックを伸ばしていない時
         {
@@ -89,42 +91,50 @@ public class Shot : NetworkBehaviour
             float fanMoveX = dir.x;
             float fanMoveZ = dir.y;
 
-            //Vector3 camForward = Camera.main.transform.forward;
-            //Vector3 camRight = Camera.main.transform.right;
+            Vector3 camForward = Camera.main.transform.forward;
+            Vector3 camRight = Camera.main.transform.right;
 
             //// 上方向の成分を消す（地面方向だけ使う）
-            //camForward.y = 0;
-            //camRight.y = 0;
+            camForward.y = 0;
+            camRight.y = 0;
 
-            //camForward.Normalize();
-            //camRight.Normalize();
+            camForward.Normalize();
+            camRight.Normalize();
 
-
-            //fanShapetarget = new Vector3(fanMoveX, 0, fanMoveZ).normalized;
-            //fanShapetarget = camForward*fanMoveZ+camRight*fanMoveX;
 
             fanShapetarget =
-    new Vector3(
-        fanMoveX,
-        0,
-        fanMoveZ
-    ).normalized;
-
+                camForward * fanMoveZ +
+                camRight * fanMoveX;
 
             fanShapetarget.Normalize();
-            Vector3 endPos =
-                GetAimPoint(
-                aimpoint.position,
-                fanShapetarget,
-                10.0f
-                );
 
-            endPos.y = aimpoint.position.y;
 
-            aimLine.ShowHandGunAimLine(
-                aimpoint.position,
-                endPos
-            );
+
+
+            switch (player) 
+            {
+                case PlayerType.ShotGun:
+                    shotgunAim.ShowShotGunAim(fanShapetarget);
+                    break;
+
+                case PlayerType.HandGun:
+
+                    Vector3 endPos =
+                        GetAimPoint(
+                        aimpoint.position,
+                        fanShapetarget,
+                        10.0f
+                        );
+
+                    endPos.y = aimpoint.position.y;
+
+                    aimLine.ShowHandGunAimLine(
+                        aimpoint.position,
+                        endPos
+                    );
+                    break;
+            }
+
             //aimLine.ShowHandGunAimLine(aimpoint.position, GetAimPoint(aimpoint.position, fanShapetarget,10.0f));
 
             //Quaternion baseRotation = Quaternion.LookRotation(fanShapetarget);
@@ -133,7 +143,17 @@ public class Shot : NetworkBehaviour
         }
         else 
         {
-            aimLine.HideHandGunAimLine();
+            switch (player)
+            {
+                case PlayerType.ShotGun:
+                    shotgunAim.HideShotGunAim();
+                    break;
+
+                case PlayerType.HandGun:
+                    aimLine.HideHandGunAimLine();
+                    break;
+            }
+            
             //collidershape.gameObject.SetActive(false);
 
         }
@@ -206,7 +226,7 @@ public class Shot : NetworkBehaviour
                         Shot_ShotGun();
                         break;
 
-                    case PlayerType.Assault:
+                    case PlayerType.HandGun:
                         distance = 10.0f;//射程距離
                         Shot_Assault();
                         break;
@@ -232,9 +252,32 @@ public class Shot : NetworkBehaviour
     void Shot_ShotGun()
     {
         Gage -= 0.3f;
+        
+
+
+        Vector3 forward = target.normalized;
+
+        Vector3 right =
+    Vector3.Cross(Vector3.up, forward).normalized;
+
         for (int i = 0; i < bulleteCount[0]; i++)
         {
-            BulleteServerRpc(i,target,OwnerClientId);
+            Vector3 firePos =
+                transform.position
+                + target.normalized * 1.0f
+                + Vector3.up * 1.0f;//カメラ基準で発射地点を決める
+
+
+
+            // 右方向に散らす
+            float offset = (i - (bulleteCount[0] - 1) / 2f) * 0.2f;
+            Vector3 spreadDir = (target + right * offset).normalized;
+
+            Vector3 targetPos = GetAimPoint(firePos, spreadDir, distance);
+
+            Quaternion bulleteRotate = Quaternion.LookRotation(spreadDir);
+
+            BulleteServerRpc(OwnerClientId,firePos ,targetPos,bulleteRotate);
         }
         shooting = false;
     }
@@ -261,11 +304,19 @@ public class Shot : NetworkBehaviour
         int shots = 6;                  // 撃つ回数
         float interval = 0.1f;          // 発射間隔（秒）
         float sideOffset = 0.5f;        // 左右のズレ幅
+
         
+
         for (int i = 0; i < shots; i++)
         {
 
-            AssaultBulleteServerRpc(i, sideOffset, OwnerClientId);
+            Vector3 firestart = firepoint.position;
+
+            Vector3 BulleteSpawn = transform.right * sideOffset * (i % 2 == 0 ? 1 : -1);
+
+            Vector3 targetPos = GetAimPoint(firestart + BulleteSpawn, target, distance);
+
+            HandGuntBulleteServerRpc(i, sideOffset, OwnerClientId,BulleteSpawn+firestart,targetPos);
 
             yield return new WaitForSeconds(interval); // ← 間隔を空ける
         }
@@ -316,72 +367,64 @@ public class Shot : NetworkBehaviour
     }
 
     [ServerRpc]
-    void BulleteServerRpc(int i,Vector3 h_target,ulong shooterID) 
+    void BulleteServerRpc(ulong shooterID,Vector3 firePos,Vector3 targetPos,Quaternion bulleteRotate) 
     {
-        Vector3 firestart = firepoint.position;
+        
 
-        GameObject Bullete = Instantiate(bullete[0], firestart, transform.rotation);//ターゲット方向に弾を生成して発射する
+        GameObject Bullete = Instantiate(bullete[0], firePos, bulleteRotate);//ターゲット方向に弾を生成して発射する
 
         var netObj=  Bullete.GetComponent<NetworkObject>();
 
-        netObj.Spawn();
 
-        Rigidbody rb = Bullete.GetComponent<Rigidbody>();
+
 
         DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
+
+        deleteBullete.SetTargetPos(targetPos);
+
+
+        netObj.Spawn();
 
         deleteBullete.Owner = gameObject;
         Debug.Log("発射ID" + shooterID);
         deleteBullete.OwnerID.Value = shooterID;
-        if (rb != null)
-        {
-            Vector3 right = transform.right;
-
-            // 右方向に散らす
-            float offset = (i - (bulleteCount[0] - 1) / 2f) * 0.2f;
-            Vector3 spreadDir = (h_target + right * offset).normalized;
-
-            //rb.AddForce(spreadDir * deleteBullete.power, ForceMode.Impulse);
-
-            //Debug.Log("speedDir" + spreadDir + "power" + deleteBullete.power);
-
-            Vector3 targetPos = GetAimPoint(firestart, spreadDir, distance);
-
-            deleteBullete.SetTargetPos(targetPos);
+        
 
 
-        }
+        
+
+
+        
     }
 
     [ServerRpc]
-    void AssaultBulleteServerRpc(int i, float sideOffset,ulong shooterID)
+    void HandGuntBulleteServerRpc(int i, float sideOffset,ulong shooterID,Vector3 bulleteSpawn,Vector3 targetPos)
     {
         isShot = true;
-        Vector3 firestart = firepoint.position;
-        Vector3 BulleteSpawn = transform.right * sideOffset * (i % 2 == 0 ? 1 : -1);
 
-        GameObject Bullete = Instantiate(bullete[1], firestart + BulleteSpawn, transform.rotation);
+
+        GameObject Bullete = Instantiate(bullete[1], bulleteSpawn, transform.rotation);
+
+
+        DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
+
+
+
+        Debug.Log("Owner:" + OwnerClientId + "Target" + targetPos);
+
+        deleteBullete.SetTargetPos(targetPos);
+
         var netObj = Bullete.GetComponent<NetworkObject>();
+        netObj.Spawn();
+        
+        deleteBullete.OwnerID.Value = shooterID;
+        
+
 
         
-        Rigidbody rb = Bullete.GetComponent<Rigidbody>();
-
-        if (rb != null)
-        {
             
-            DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
-            //deleteBullete.Owner = gameObject;
-            //Debug.Log("発射ID"+shooterID);
-            deleteBullete.OwnerID.Value = shooterID;
-            netObj.Spawn();
-            Vector3 forward = transform.forward;
 
-            Vector3 target = GetAimPoint(firestart + BulleteSpawn, forward, distance);
-
-            deleteBullete.SetTargetPos(target);
-            
-            //rb.AddForce(forward * deleteBullete.power, ForceMode.Impulse);
-        }
+        
     }
 
     [ServerRpc]

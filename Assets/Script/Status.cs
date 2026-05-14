@@ -37,6 +37,8 @@ public class Status : NetworkBehaviour
 
     private void Start()
     {
+
+
         GameObject standPlayerSetObj = GameObject.Find("StandPlayerSet");
 
         if (standPlayerSetObj != null)
@@ -46,12 +48,6 @@ public class Status : NetworkBehaviour
             standPlayerSet.Connect();
 
         }
-    }
-
-    public override void OnNetworkSpawn()
-    {
-
-
 
         if (IsLocalPlayer)
         {
@@ -63,6 +59,14 @@ public class Status : NetworkBehaviour
             playerHpBar.gameObject.SetActive(false);
             enemyHpBar.gameObject.SetActive(true);
         }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+
+
+
+
 
         // ïœçXÇ™Ç†Ç¡ÇΩÇÁ HPBar ÇçXêV
         HP.OnValueChanged += OnHPChanged;

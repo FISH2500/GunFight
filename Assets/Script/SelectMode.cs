@@ -74,6 +74,8 @@ public class SelectMode : NetworkBehaviour
         //SceneManager.LoadScene("BattleScene");
 
         PlayerSpawnServerRpc(gIndex);
+        
+
         PlayerDataManager.instance.SetIndexServerRpc(gIndex);
     }
 
@@ -129,7 +131,8 @@ public class SelectMode : NetworkBehaviour
         {
             GameStart();
             PlayerSpawnServerRpc(gIndex);
-            //PlayerDataManager.instance.SetIndexServerRpc(gIndex);
+
+            PlayerDataManager.instance.SetIndexServerRpc(gIndex);
         }
 
         NetworkManager.OnClientConnectedCallback -= OnClientConnected;
@@ -166,10 +169,16 @@ public class SelectMode : NetworkBehaviour
 
         playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
 
-        //playerObj.GetComponent<PlayerData>().playerID= PlayerDataManager.instance.playerCount;Ú‘±”Ô†‚ğæ“¾
+        
+        if (IsServer)
+        {
+            playerObj.GetComponent<PlayerData>().playerID.Value = PlayerDataManager.instance.playerCount;//Ú‘±”Ô†‚ğæ“¾
 
-        PlayerDataManager.instance.playerCount++;
+            //PlayerDataManager.instance.playerCount++;
 
+        }
+
+        
     }
 
 

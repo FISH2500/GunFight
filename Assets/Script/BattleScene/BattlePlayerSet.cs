@@ -14,8 +14,8 @@ public class BattlePlayerSet : NetworkBehaviour
        //// Joystick stick = FindObjectOfType<Joystick>();
 
        // // 自分のPlayer取得
-       NetworkObject playerObj = NetworkManager.Singleton.SpawnManager
-            .GetLocalPlayerObject();
+
+        NetworkObject playerObj=GetLocalPlayer();
 
         playerObj.GetComponent<Status>().BattleStartServerRpc();//Playerをバトルモードにする
 
@@ -34,5 +34,13 @@ public class BattlePlayerSet : NetworkBehaviour
 
        // 
        // //player.SetStick(stick);
+    }
+
+    NetworkObject GetLocalPlayer() 
+    {
+        NetworkObject playerObj = NetworkManager.Singleton.SpawnManager
+            .GetLocalPlayerObject();
+
+        return playerObj;
     }
 }

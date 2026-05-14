@@ -1689,6 +1689,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  playerSelectIndex: ffffffffffffffff
   playerCount: 0
 --- !u!4 &213332372
 Transform:
@@ -18599,6 +18600,7 @@ MonoBehaviour:
   aimpoint: {fileID: 0}
   collidershape: {fileID: 0}
   aimLine: {fileID: 0}
+  shotgunAim: {fileID: 0}
   addRotateValue: 0
   power: 15
   bulleteCount:
@@ -21636,6 +21638,7 @@ MonoBehaviour:
   aimpoint: {fileID: 0}
   collidershape: {fileID: 591705732}
   aimLine: {fileID: 0}
+  shotgunAim: {fileID: 0}
   addRotateValue: 0
   power: 15
   bulleteCount: []

@@ -10,6 +10,7 @@ public class StandPlayerSet : NetworkBehaviour
         NetworkObject playerObj = NetworkManager.Singleton.SpawnManager
              .GetLocalPlayerObject();
         Debug.Log("playerObj" + playerObj);
+        if(playerObj!=null)
             playerObj.GetComponent<Status>().StandStartServerRpc();//PlayerÇë“ã@ÉÇÅ[ÉhÇ…Ç∑ÇÈ
     }
 }

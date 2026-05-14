@@ -17,7 +17,6 @@ public class DeleteBullete : NetworkBehaviour
     {
 
     }
-
     public void SetTargetPos(Vector3 pos) 
     {
         targetPos = pos;
@@ -25,6 +24,11 @@ public class DeleteBullete : NetworkBehaviour
 
     void Update()
     {
+
+        if (!IsServer) return;
+        
+            BulleteMove();
+        
         //transform.position = Vector3.MoveTowards(transform.position,
         //                                       targetPos,
         //                                       speed * Time.deltaTime);
@@ -33,11 +37,16 @@ public class DeleteBullete : NetworkBehaviour
         //{
         //    if(IsServer) GetComponent<NetworkObject>().Despawn();
         //}
+
+    }
+
+    private void BulleteMove() 
+    {
         Vector3 nextPos =
-    Vector3.MoveTowards(
-        transform.position,
-        targetPos,
-        speed * Time.deltaTime);
+            Vector3.MoveTowards(
+            transform.position,
+            targetPos,
+            speed * Time.deltaTime);
 
         Vector3 dir = nextPos - transform.position;
         float distance = dir.magnitude;
