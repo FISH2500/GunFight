@@ -12,14 +12,15 @@ public class DeleteBullete : NetworkBehaviour
     public NetworkVariable<ulong> OwnerID=new NetworkVariable<ulong>();//íeÇÃèäéùé“Çï\Ç∑
 
     private Vector3 targetPos;
-
+    private Vector3 firePos;
     void Start()
     {
 
     }
-    public void SetTargetPos(Vector3 pos) 
+    public void SetTargetPos(Vector3 fire,Vector3 target) 
     {
-        targetPos = pos;
+        firePos=fire;
+        targetPos = target;
     }
 
     void Update()
@@ -82,12 +83,4 @@ public class DeleteBullete : NetworkBehaviour
         }
     }
 
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if (other.tag == "Wall")
-    //    {
-    //        if (IsServer)
-    //            GetComponent<NetworkObject>().Despawn();
-    //    }
-    //}
 }

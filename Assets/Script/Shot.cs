@@ -123,7 +123,7 @@ public class Shot : NetworkBehaviour
                         GetAimPoint(
                         aimpoint.position,
                         fanShapetarget,
-                        10.0f
+                        10.0f+0.8f
                         );
 
                     endPos.y = aimpoint.position.y;
@@ -316,7 +316,7 @@ public class Shot : NetworkBehaviour
 
             Vector3 targetPos = GetAimPoint(firestart + BulleteSpawn, target, distance);
 
-            HandGuntBulleteServerRpc(i, sideOffset, OwnerClientId,BulleteSpawn+firestart,targetPos);
+            HandGuntBulleteServerRpc(OwnerClientId,BulleteSpawn+firestart,targetPos);
 
             yield return new WaitForSeconds(interval); // ← 間隔を空ける
         }
@@ -380,7 +380,7 @@ public class Shot : NetworkBehaviour
 
         DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
 
-        deleteBullete.SetTargetPos(targetPos);
+        deleteBullete.SetTargetPos(firePos,targetPos);
 
 
         netObj.Spawn();
@@ -398,7 +398,7 @@ public class Shot : NetworkBehaviour
     }
 
     [ServerRpc]
-    void HandGuntBulleteServerRpc(int i, float sideOffset,ulong shooterID,Vector3 bulleteSpawn,Vector3 targetPos)
+    void HandGuntBulleteServerRpc(ulong shooterID,Vector3 bulleteSpawn,Vector3 targetPos)
     {
         isShot = true;
 
@@ -408,23 +408,12 @@ public class Shot : NetworkBehaviour
 
         DeleteBullete deleteBullete = Bullete.GetComponent<DeleteBullete>();
 
-
-
-        Debug.Log("Owner:" + OwnerClientId + "Target" + targetPos);
-
-        deleteBullete.SetTargetPos(targetPos);
+        deleteBullete.SetTargetPos(bulleteSpawn,targetPos);
 
         var netObj = Bullete.GetComponent<NetworkObject>();
         netObj.Spawn();
         
         deleteBullete.OwnerID.Value = shooterID;
-        
-
-
-        
-            
-
-        
     }
 
     [ServerRpc]
