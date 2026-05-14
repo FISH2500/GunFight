@@ -64,7 +64,7 @@ public class SelectMode : NetworkBehaviour
 
     }
 
-    public void Host()//ホストを選択した場合s 
+    public void Host()//ホストを選択した場合
     {
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
         //NetworkManager.StartHost();
@@ -102,7 +102,7 @@ public class SelectMode : NetworkBehaviour
 
         //PlayerSpawnServerRpc();Playerのスポーン
         NetworkManager.Singleton.SceneManager.LoadScene("BattleScene", LoadSceneMode.Single);
-        //Debug.Log("あなた"+NetworkManager.Singleton.SpawnManager
+
     //.GetLocalPlayerObject());
 
         //PlayerSpawnServerRpc(gIndex);
@@ -158,20 +158,18 @@ public class SelectMode : NetworkBehaviour
     {
         ulong clientID = rpcParams.Receive.SenderClientId;
 
-
-        //PlayerDataManager.instance.PlayerNumRegistration(clientID);
-
         GameObject prefab = select.Character[index];
-
-        
 
         var playerObj = Instantiate(prefab);
 
         spawnSystem.SetSpawnPosition(playerObj, PlayerDataManager.instance.playerCount);
 
+        playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
+
+        //playerObj.GetComponent<PlayerData>().playerID= PlayerDataManager.instance.playerCount;接続番号を取得
+
         PlayerDataManager.instance.playerCount++;
 
-        playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
     }
 
 
