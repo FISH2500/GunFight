@@ -23,7 +23,7 @@ public class ShotGunAim : MonoBehaviour
     /// <summary>
     /// ショットガンのエイム線を出す
     /// </summary>
-    public void ShowShotGunAim(Vector3 dir)
+    public void ShowShotGunAim(Vector3 dir,Vector3 endPos)
     {
         meshRenderer.enabled = true;
 

@@ -801,7 +801,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 230024230e31ebc4e87e80e375663b1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerID: 0
+  ShowTopMostFoldoutHeaderGroup: 1
+  playerID:
+    m_InternalValue: 0
 --- !u!114 &2222702811586917434
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -842,7 +844,7 @@ MonoBehaviour:
   - {fileID: 6160047473313373781, guid: cf6a13a2c8e1372499f032653921f4dd, type: 3}
   - {fileID: 6770898068881485120, guid: a7ceb139dc399e34285707f5277ee302, type: 3}
   firepoint: {fileID: 2673574575962486155}
-  aimpoint: {fileID: 0}
+  aimpoint: {fileID: 5985551011754036269}
   collidershape: {fileID: 172294611842979549}
   aimLine: {fileID: 0}
   shotgunAim: {fileID: 1499792183899166360}
@@ -857,6 +859,7 @@ MonoBehaviour:
   Gage: 0
   animator: {fileID: 8072001874305338012}
   reloadTime: 0.8
+  distance: 5
   isShot: 0
   player: 0
   ChargeRate: 0.15

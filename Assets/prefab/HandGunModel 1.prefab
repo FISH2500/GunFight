@@ -7551,7 +7551,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 230024230e31ebc4e87e80e375663b1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerID: 0
+  ShowTopMostFoldoutHeaderGroup: 1
+  playerID:
+    m_InternalValue: 0
 --- !u!114 &2780448933848924110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7639,7 +7641,9 @@ MonoBehaviour:
   bulleteGage_Gray: {fileID: 2515252073851383521}
   Gage: 0
   animator: {fileID: 1923220868088912652}
+  isController: 1
   reloadTime: 0.8
+  distance: 10
   isShot: 0
   player: 1
   ChargeRate: 0.15

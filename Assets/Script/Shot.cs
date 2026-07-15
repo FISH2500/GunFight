@@ -22,8 +22,9 @@ public class Shot : NetworkBehaviour
     [SerializeField] private Image bulleteGage_Gray;
     [SerializeField] private float Gage;
     [SerializeField] private Animator animator;
-
+    [SerializeField] private bool isController=true;//コントローラーかどうか
     public float reloadTime = 0.8f;  // リロードにかかる時間
+    [SerializeField] float distance;
 
     private Vector3 target;
     private Vector3 fanShapetarget;
@@ -42,14 +43,15 @@ public class Shot : NetworkBehaviour
     private bool isReload = false;
     private bool shooting = false;
     private Vector2 oldJoyStick;
-    float distance;
 
     void Start()
     {
 
-
-        FindFloatingJoyStick();
-        joystick.enabled = false;
+        if (!GetComponent<PlayerData>().isControll)
+        {
+            FindFloatingJoyStick();
+            joystick.enabled = false;
+        }
         Gage = 0.9f;
         collidershape.gameObject.SetActive(false);
         if (IsOwner) 
@@ -81,7 +83,7 @@ public class Shot : NetworkBehaviour
         //    oldJoyStick = dir;
         //}
 
-        if (dir != Vector2.zero&& dir.magnitude >= 0.4f)//射撃ボタンを動かしている時,スティックを伸ばしていない時
+        if (dir != Vector2.zero&& dir.magnitude >= 0.4f)//エイムスティックを動かしている時
         {
             
             //collidershape.gameObject.SetActive(true);
@@ -114,7 +116,7 @@ public class Shot : NetworkBehaviour
             switch (player) 
             {
                 case PlayerType.ShotGun:
-                    shotgunAim.ShowShotGunAim(fanShapetarget);
+                    shotgunAim.ShowShotGunAim(fanShapetarget, GetAimPoint(aimpoint.position, fanShapetarget, distance));
                     break;
 
                 case PlayerType.HandGun:
@@ -134,12 +136,6 @@ public class Shot : NetworkBehaviour
                     );
                     break;
             }
-
-            //aimLine.ShowHandGunAimLine(aimpoint.position, GetAimPoint(aimpoint.position, fanShapetarget,10.0f));
-
-            //Quaternion baseRotation = Quaternion.LookRotation(fanShapetarget);
-
-            //collidershape.transform.rotation = baseRotation * Quaternion.Euler(0, addRotateValue, 0);
         }
         else 
         {
@@ -154,14 +150,14 @@ public class Shot : NetworkBehaviour
                     break;
             }
             
-            //collidershape.gameObject.SetActive(false);
-
         }
+
+        ShotCheck();//射撃をしているかチェック
         bulleteGage_Orange.fillAmount = Gage;
 
 
 
-        ShotCheck();//射撃をしているかチェック
+        
     }
 
     void ShotCheck() 
@@ -193,19 +189,18 @@ public class Shot : NetworkBehaviour
                 camForward.Normalize();
                 camRight.Normalize();
 
-                //target = new Vector3(moveX, 0, moveZ).normalized;
-
                 target=camForward*moveZ+camRight*moveX;
                 
                 isShotEnd = false;
 
-                //if(!shooting) shooting = false;
 
             }
 
             if (Gamepad.current.rightTrigger.wasPressedThisFrame &&!shooting)//ZRが押された時
             {
-                
+
+                Vector3 shotTarget = target;
+
                 animator.SetBool("isForwardShot", true);
                 isReload = false;
                 shooting = true;
@@ -222,13 +217,11 @@ public class Shot : NetworkBehaviour
                 switch (player)
                 {
                     case PlayerType.ShotGun:
-                        distance = 5.0f;
-                        Shot_ShotGun();
+                        Shot_ShotGun(shotTarget);
                         break;
 
                     case PlayerType.HandGun:
-                        distance = 10.0f;//射程距離
-                        Shot_Assault();
+                        Shot_HandGun(shotTarget);
                         break;
 
                     case PlayerType.BomuThrow:
@@ -249,13 +242,13 @@ public class Shot : NetworkBehaviour
 
     }
 
-    void Shot_ShotGun()
+    void Shot_ShotGun(Vector3 shotTarget)
     {
         Gage -= 0.3f;
         
 
 
-        Vector3 forward = target.normalized;
+        Vector3 forward = shotTarget.normalized;
 
         Vector3 right =
     Vector3.Cross(Vector3.up, forward).normalized;
@@ -290,22 +283,20 @@ public class Shot : NetworkBehaviour
 
     }
 
-    void Shot_Assault()
+    void Shot_HandGun(Vector3 shotTarget)
     {
         if (!isShot)
-            StartCoroutine(AssaultBurst());
+            StartCoroutine(HandGunBurst(shotTarget));
     }
-    private IEnumerator AssaultBurst()
+    private IEnumerator HandGunBurst(Vector3 shotTarget)
     {
-        
-        Debug.Log("shot" + isShot);
-        Gage -= 0.3f;
+
+        Gage -= 0.3f;//ゲージを減らす
 
         int shots = 6;                  // 撃つ回数
         float interval = 0.1f;          // 発射間隔（秒）
         float sideOffset = 0.5f;        // 左右のズレ幅
 
-        
 
         for (int i = 0; i < shots; i++)
         {
@@ -314,7 +305,7 @@ public class Shot : NetworkBehaviour
 
             Vector3 BulleteSpawn = transform.right * sideOffset * (i % 2 == 0 ? 1 : -1);
 
-            Vector3 targetPos = GetAimPoint(firestart + BulleteSpawn, target, distance);
+            Vector3 targetPos = GetAimPoint(firestart + BulleteSpawn, shotTarget.normalized, distance);
 
             HandGuntBulleteServerRpc(OwnerClientId,BulleteSpawn+firestart,targetPos);
 

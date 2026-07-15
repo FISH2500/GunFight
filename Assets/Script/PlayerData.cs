@@ -6,5 +6,5 @@ public class PlayerData : NetworkBehaviour
 
     public NetworkVariable<int> playerID = new NetworkVariable<int>();
 
-
+    public bool isControll=true;
 }

@@ -16,9 +16,12 @@ public class PlayerMove : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        Debug.Log("ネットワークスポーン");
-        joystick = FindObjectOfType<DynamicJoystick>();
-        joystick.enabled = false;
+        if (!GetComponent<PlayerData>().isControll)//コントローラーじゃない場合
+        {
+            Debug.Log("ネットワークスポーン");
+            joystick = FindObjectOfType<DynamicJoystick>();
+            joystick.enabled = false;
+        }
     }
 
     void Start()
